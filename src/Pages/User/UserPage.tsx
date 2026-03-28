@@ -1,0 +1,159 @@
+
+"use client";
+
+import { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
+import { Mutations } from "../../Api/Mutations";
+import {
+  CommonPageHeader,
+  CommonPagination,
+  
+} from "../../Components";
+import CommonSearchFilterBar from "../../Components/common/CommonSearchFillterBar";
+import UserTable from "../../Components/User/UserTable";
+import UserForm from "../../Components/User/UserForm";
+import { PAGE_TITLE } from "../../Constants";
+import { Queries } from "../../Api/Queries";
+
+const User = () => {
+  const [open, setOpen] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+  });
+
+  const [filters, setFilters] = useState({
+    search: "",
+  });
+
+  const [statusToggle, setStatusToggle] = useState(true);
+
+  const queryParams = {
+    page: pagination.page,
+    limit: pagination.limit,
+    ...(filters.search.trim() && { search: filters.search.trim() }),
+    status: statusToggle ? "active" : "inactive",
+  };
+
+  const { data, isLoading, refetch } =
+    Queries.useGetUsers(queryParams);
+
+  const users = data?.data?.user_data || [];
+  const total = data?.data?.totalData || 0;
+
+  const filteredUsers = useMemo(() => users, [users]);
+
+  const updateUser = Mutations.useUpdateUser();
+  const deleteUser = Mutations.useDeleteUser();
+
+
+  const handleSubmit = async (values: any) => {
+    try {
+      await updateUser.mutateAsync({
+        ...values,
+        userId: editData._id,
+      });
+
+      setOpen(false);
+      setEditData(null);
+      refetch();
+    } catch (error) {
+      console.error("Update error:", error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        await deleteUser.mutateAsync(id);
+        refetch();
+      } catch (error) {
+        console.error("Delete error:", error);
+      }
+    }
+  };
+
+  const handleToggleStatus = async (item: any) => {
+    try {
+      await updateUser.mutateAsync({
+        userId: item._id,
+        firstName: item.firstName || "",
+        lastName: item.lastName || "",
+        email: item.email,
+        contact: item.contact || {},
+        roles: item.roles,
+        isActive: !item.isActive,
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Toggle error:", error);
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setFilters((prev) => ({ ...prev, search: value }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const handlePageChange = (page: number) => {
+    setPagination((prev) => ({ ...prev, page }));
+  };
+
+  const handleLimitChange = (limit: number) => {
+    setPagination((prev) => ({ ...prev, limit, page: 1 }));
+  };
+
+  return (
+    <div className="user-page">
+      <CommonPageHeader
+        title={PAGE_TITLE.USERS.TITLE}
+        subtitle={PAGE_TITLE.USERS.SUB_TITLE}
+        buttonText={PAGE_TITLE.USERS.BUTTON_TEXT}
+        buttonIcon={<Plus size={18} />}
+        onButtonClick={() => {
+          setEditData(null);
+          setOpen(true);
+        }}
+      />
+
+      <CommonSearchFilterBar
+        total={total}
+        label={PAGE_TITLE.USERS.LABEL}
+        search={filters.search}
+        onSearchChange={handleSearchChange}
+        onSearchSubmit={refetch}
+        status={statusToggle}
+        onStatusChange={(val) => {
+          setStatusToggle(val);
+          setPagination((prev) => ({ ...prev, page: 1 }));
+        }}
+      />
+
+      <UserTable
+        data={filteredUsers}
+        loading={isLoading}
+        page={pagination.page}
+        limit={pagination.limit}
+        onEdit={(item: any) => {
+          setEditData(item);
+          setOpen(true);
+        }}
+        onDelete={handleDelete}
+        onToggleStatus={handleToggleStatus}
+      />
+
+      <CommonPagination
+        page={pagination.page}
+        limit={pagination.limit}
+        total={total}
+        currentCount={filteredUsers.length}
+        label={PAGE_TITLE.USERS.LABEL} onPageChange={handlePageChange} onLimitChange={handleLimitChange}  />
+      <UserForm open={open}onClose={() => {setOpen(false); setEditData(null);}} onSubmit={handleSubmit}initialValues={editData}/>
+    </div>
+  );
+};
+
+export default User;

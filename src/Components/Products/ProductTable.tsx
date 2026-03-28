@@ -1,0 +1,194 @@
+"use client";
+
+import dayjs from "dayjs";
+import { Eye, EyeOff, Package, Pencil, Trash2 } from "lucide-react";
+import CommonTable from "../common/CommonTable";
+
+interface ProductTableProps {
+  data: any[];
+  loading: boolean;
+  page: number;
+  limit: number;
+  onEdit: (item: any) => void;
+  onDelete: (id: string) => void;
+  onToggleStatus: (item: any) => void;
+}
+
+const ProductTable = ({
+  data,
+  loading,
+  page,
+  limit,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+}: ProductTableProps) => {
+  const columns = [
+    {
+      title: "Sr No",
+      key: "srNo",
+      width: 80,
+      render: (_: any, index = 0) => (
+        <span className="table-text strong">
+          {(page - 1) * limit + index + 1}
+        </span>
+      ),
+    },
+
+    {
+      title: "Cover",
+      key: "coverimage",
+      render: (item: any) => {
+        const imageUrl = item.coverimage || item.images?.[0];
+
+        return (
+          <div className="flex items-center">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={item.name}
+                className="h-12 w-12 rounded-lg object-cover border"
+              />
+            ) : (
+              <div
+                className="h-12 w-12 rounded-lg flex items-center justify-center border"
+                style={{ backgroundColor: "var(--gray-light)" }}
+              >
+                <Package size={18} style={{ color: "var(--primary)" }} />
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+
+    {
+      title: "Product",
+      key: "name",
+      render: (item: any) => (
+        <div className="product-info-cell">
+          <span className="product-name">{item.name || "-"}</span>
+        </div>
+      ),
+    },
+
+    {
+      title: "Title",
+      key: "title",
+      width: 150,
+      render: (item: any) => (
+        <div className="product-info-cell">
+          <span className="product-name">{item.title || "-"}</span>
+        </div>
+      ),
+    },
+
+    {
+      title: "Gender",
+      key: "gender",
+      width: 100,
+      render: (item: any) => (
+        <span className="table-text capitalize">
+          {item.gender || "-"}
+        </span>
+      ),
+    },
+
+    {
+      title: "MRP",
+      key: "mrp",
+      width: 100,
+      render: (item: any) => (
+        <span className="table-text strong">
+          {item.mrp ? `₹${item.mrp}` : "-"}
+        </span>
+      ),
+    },
+
+   
+
+    {
+      title: "Created / Updated",
+      key: "createdUpdatedAt",
+      width: 280,
+      render: (item: any) => (
+        <div className="date-group-cell">
+          <div className="date-line">
+            <span className="date-label">Created:</span>
+            <span className="date-value">
+              {item.createdAt
+                ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
+                : "-"}
+            </span>
+          </div>
+
+          <div className="date-line">
+            <span className="date-label">Updated:</span>
+            <span className="date-value">
+              {item.updatedAt
+                ? dayjs(item.updatedAt).format("DD MMM YYYY, hh:mm A")
+                : "-"}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+
+    {
+      title: "Actions",
+      key: "actions",
+      width: 150,
+      align: "right" as const,
+      render: (item: any) => (
+        <div className="flex justify-end gap-2">
+          <button
+            className="action-btn"
+            onClick={() => onToggleStatus(item)}
+            title={item.isActive ? "Set Inactive" : "Set Active"}
+            style={{
+              color: item.isActive
+                ? "var(--primary)"
+                : "var(--red)",
+              borderColor: item.isActive
+                ? "var(--primary-light)"
+                : "rgba(255,0,0,0.15)",
+            }}
+          >
+            {item.isActive ? (
+              <Eye size={16} />
+            ) : (
+              <EyeOff size={16} />
+            )}
+          </button>
+
+          <button
+            className="action-btn edit"
+            onClick={() => onEdit(item)}
+          >
+            <Pencil size={16} />
+          </button>
+
+          <button
+            className="action-btn delete"
+            onClick={() => onDelete(item._id)}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <CommonTable
+      title="Products List"
+      icon={<Package size={18} />}
+      columns={columns}
+      data={data}
+      loading={loading}
+      emptyText="No products found"
+    />
+  );
+};
+
+export default ProductTable;
