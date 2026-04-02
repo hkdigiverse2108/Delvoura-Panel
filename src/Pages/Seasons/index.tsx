@@ -50,7 +50,21 @@ const Season = () => {
   return (
     <div className="user-page">
       <CommonPageHeader title={PAGE_TITLE.SEASON.TITLE} subtitle={PAGE_TITLE.SEASON.SUB_TITLE} buttonText={PAGE_TITLE.SEASON.BUTTON_TEXT} buttonIcon={<Plus size={18} />} onButtonClick={() => { setEditData(null); setMode("form"); }} />
-      <CommonSearchFilterBar total={total} label={PAGE_TITLE.SEASON.LABEL} search={filters.search} onSearchChange={(val) => setFilters({ search: val })} onSearchSubmit={refetch} status={statusToggle} onStatusChange={setStatusToggle} />
+    <CommonSearchFilterBar
+  total={total}
+  label={PAGE_TITLE.SEASON.LABEL}
+
+  search={filters.search}
+  onSearchChange={(val) => setFilters({ search: val })}
+  onSearchSubmit={refetch}
+
+  status={statusToggle}
+  onStatusChange={setStatusToggle}
+
+  showStatusToggle={true}
+  showTotal={true}
+/>
+    
       <SeasonTable data={seasons} loading={isLoading} page={pagination.page} limit={pagination.limit} onEdit={(item: any) => { setEditData(item); setMode("form"); }} onDelete={(id: string) => setDeleteId(id)} onToggleStatus={handleToggleStatus} />
       <ConfirmModal open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleteSeason.isPending} />
       <CommonPagination page={pagination.page} limit={pagination.limit} total={total} currentCount={seasons.length} label={PAGE_TITLE.SEASON.LABEL} onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))} onLimitChange={(limit) => setPagination({ page: 1, limit, total })} />

@@ -4,16 +4,16 @@
 @import "tailwindcss";
 
 /* ===== CSS VARIABLES ===== */
-:root {
-  /* Primary Color */
-  --primary: #BCAE93;
-  --primary-10: rgba(188, 174, 147, 0.1);
-  --primary-15: rgba(188, 174, 147, 0.15);
-  --primary-20: rgba(188, 174, 147, 0.2);
-  --primary-30: rgba(188, 174, 147, 0.3);
-  --primary-50: rgba(188, 174, 147, 0.5);
-  --primary-80: rgba(188, 174, 147, 0.8);
-  
+  :root {
+    /* Primary Color */
+    --primary: #BCAE93;
+    --primary-10: rgba(188, 174, 147, 0.1);
+    --primary-15: rgba(188, 174, 147, 0.15);
+    --primary-20: rgba(188, 174, 147, 0.2);
+    --primary-30: rgba(188, 174, 147, 0.3);
+    --primary-50: rgba(188, 174, 147, 0.5);
+    --primary-80: rgba(188, 174, 147, 0.8);
+    
   /* Neutral Colors */
   --black: #1a1a1a;
   --white: #ffffff;
@@ -1885,4 +1885,54 @@ select:focus-visible {
 .custom-sidebar-menu {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Ant Design Theme Override */
+
+.ant-picker-focused,
+.ant-picker:hover,
+.ant-select-focused .ant-select-selector,
+.ant-select-selector:hover,
+.ant-input:focus,
+.ant-input-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-20) !important;
+}
+
+/* Selected date color */
+.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--primary) !important;
+}
+
+/* Hover date */
+.ant-picker-cell-in-view.ant-picker-cell-inner:hover {
+  background: var(--primary-10) !important;
+}
+
+/* Range picker selected range */
+.ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner,
+.ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background: var(--primary) !important;
+}
+
+/* Range background */
+.ant-picker-cell-in-view.ant-picker-cell-in-range::before {
+  background: var(--primary-10) !important;
+}
+
+/* Select dropdown selected option */
+.ant-select-item-option-selected {
+  background: var(--primary-10) !important;
+  color: var(--primary) !important;
+}
+
+/* Button primary color */
+.ant-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.ant-btn-primary:hover {
+  background: var(--primary-80) !important;
+  border-color: var(--primary-80) !important;
 }

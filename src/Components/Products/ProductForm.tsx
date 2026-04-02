@@ -2,16 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button, Input, InputNumber, Select } from "antd";
-import { Flame, Package, Plus, Trash2, Eye, Edit, Tag,ShoppingBag, X, Star } from "lucide-react";
-import { CommonEditor, CommonFormActions,  CommonImageUpload, CommonInput,  } from "../common/commonForm";
+import { Flame, Package, Plus, Trash2, Eye, Edit, ShoppingBag, X, Star, Minus, Plus as PlusIcon, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { CommonEditor, CommonFormActions, CommonImageUpload, CommonInput } from "../common/commonForm";
 import ExtraImagesGallery from "../common/commonForm/ExtraImagesGallery";
 import { Queries } from "../../Api/Queries";
-import type { Collection, ProductSubmitData, Scent, Season } from "../../Types";
+import type { Collection,  Scent, Season } from "../../Types";
+
 interface ProductFormProps {
   initialValues?: any;
   onSubmit: (values: any) => void;
   onCancel: () => void;
 }
+
+
 
 const genderOptions = [
   { label: "Men", value: "men" },
@@ -22,6 +25,8 @@ const genderOptions = [
 const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps) => {
   const isEdit = !!initialValues;
   const [showPreview, setShowPreview] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const [form, setForm] = useState<any>({
     name: "",
@@ -87,19 +92,16 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
       ? initialValues.images
       : ["", "", "", ""];
 
-    // Handle collectionIds - could be array of objects or strings
     let collectionIds = [];
     if (initialValues.collectionIds) {
       collectionIds = initialValues.collectionIds.map((item: any) => item._id || item);
     }
 
-    // Handle seasonIds
     let seasonIds = [];
     if (initialValues.seasonIds) {
       seasonIds = initialValues.seasonIds.map((item: any) => item._id || item);
     }
 
-    // Handle scentIds
     let scentIds = [];
     if (initialValues.scentIds) {
       scentIds = initialValues.scentIds.map((item: any) => item._id || item);
@@ -132,6 +134,11 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
       images: images,
     });
   }, [initialValues]);
+
+  // Reset image index when form.images changes
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [form.coverimage, form.images]);
 
   const updateArrayField = (field: string, index: number, value: string) => {
     const updated = [...form[field]];
@@ -184,8 +191,7 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    
-    // Prepare data for API
+
     const submitData = {
       name: form.name,
       title: form.title,
@@ -211,12 +217,8 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
       images: form.images.filter((img: string) => img),
     };
 
-    if (isEdit) {
-     const submitData: ProductSubmitData = { ...form };
-
-if (initialValues?._id) {
-  submitData.productId = initialValues._id;
-}
+    if (isEdit && initialValues?._id) {
+      (submitData as any).productId = initialValues._id;
     }
 
     setLoading(true);
@@ -230,7 +232,55 @@ if (initialValues?._id) {
     const prices = form.variants.filter((v: any) => v.price).map((v: any) => v.price);
     return prices.length > 0 ? Math.min(...prices) : null;
   };
-      const lowestPrice = getLowestPrice();
+  const lowestPrice = getLowestPrice();
+
+  // Get all images for preview (cover + extra images)
+  const getAllPreviewImages = () => {
+    const images = [];
+    if (form.coverimage) {
+      images.push(form.coverimage);
+    }
+    if (form.images && Array.isArray(form.images)) {
+      const validImages = form.images.filter((img: string) => img && img.trim() !== "");
+      images.push(...validImages);
+    }
+    return images;
+  };
+
+  const allImages = getAllPreviewImages();
+  const currentImage = allImages[currentImageIndex] || "";
+
+  const nextImage = () => {
+    if (allImages.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (allImages.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    }
+  };
+
+  // Get first collection name for brand display
+  const getFirstCollectionName = () => {
+    if (form.collectionIds.length > 0 && collectionOptions.length > 0) {
+      const collection = collectionOptions.find((c: any) => c.value === form.collectionIds[0]);
+      return collection?.label || "";
+    }
+    return "";
+  };
+
+  const firstCollection = getFirstCollectionName();
+
+  // Get selected variant
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  useEffect(() => {
+    const validVariants = form.variants.filter((v: any) => v.size.trim());
+    if (validVariants.length > 0 && !selectedVariant) {
+      setSelectedVariant(validVariants[0]);
+    }
+  }, [form.variants, selectedVariant]);
 
   return (
     <div className="fixed inset-0 bg-gray-50 overflow-hidden">
@@ -253,42 +303,35 @@ if (initialValues?._id) {
               </p>
             </div>
           </div>
-          
-          {/* Preview Toggle Button */}
+
           <button
             onClick={() => setShowPreview(!showPreview)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 shadow-sm"
             style={{
-              backgroundColor: showPreview ? 'var(--primary-dark)' : 'white',
-              color: showPreview ? 'white' : 'var(--gray-dark)',
-              border: !showPreview ? '1px solid var(--gray-border)' : 'none'
+              backgroundColor: showPreview ? '#1a1a1a' : 'white',
+              color: showPreview ? 'white' : '#4b5563',
+              border: !showPreview ? '1px solid #e5e7eb' : 'none'
             }}
           >
             {showPreview ? (
-              <>
-                <Edit size={18} />
-                <span className="text-sm font-medium">Edit Mode</span>
-              </>
+              <><Edit size={18} /><span className="text-sm font-medium">Edit Mode</span></>
             ) : (
-              <>
-                <Eye size={18} />
-                <span className="text-sm font-medium">Preview Mode</span>
-              </>
+              <><Eye size={18} /><span className="text-sm font-medium">Preview Mode</span></>
             )}
           </button>
         </div>
       </div>
 
-      {/* Main Content - Scrollable without scrollbar */}
+      {/* Main Content */}
       <div className="pt-20 h-full overflow-y-auto scrollbar-hide">
         <div className={`${showPreview ? 'block' : 'lg:grid lg:grid-cols-2'} gap-8 p-6 max-w-7xl mx-auto`}>
-          
+
           {/* Form Section */}
           <div className={showPreview ? "block" : "block"}>
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="space-y-8">
-                  {/* Basic Information Grid */}
+                  {/* Basic Information */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <CommonInput
                       label="Product Name"
@@ -308,13 +351,10 @@ if (initialValues?._id) {
                       value={form.title}
                       onChange={(val) => setForm({ ...form, title: val })}
                       placeholder="Enter product title"
-                      error={errors.title}
                     />
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        MRP <span className="text-red-500">*</span>
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">MRP</label>
                       <InputNumber
                         value={form.mrp}
                         onChange={(value) => setForm({ ...form, mrp: value })}
@@ -336,7 +376,7 @@ if (initialValues?._id) {
                     </div>
                   </div>
 
-                  {/* Collections, Seasons, Scents Grid */}
+                  {/* Collections, Seasons, Scents */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Collections</label>
@@ -350,7 +390,6 @@ if (initialValues?._id) {
                         className="w-full rounded-lg"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Seasons</label>
                       <Select
@@ -363,7 +402,6 @@ if (initialValues?._id) {
                         className="w-full rounded-lg"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Scents</label>
                       <Select
@@ -395,156 +433,62 @@ if (initialValues?._id) {
                   {/* Variants */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-semibold text-gray-700">
-                        Variants (Size & Price) <span className="text-red-500">*</span>
-                      </label>
-                      <Button icon={<Plus size={16} />} onClick={addVariant} className="rounded-lg">
-                        Add Variant
-                      </Button>
+                      <label className="block text-sm font-semibold text-gray-700">Variants (Size & Price)</label>
+                      <Button icon={<Plus size={16} />} onClick={addVariant} className="rounded-lg">Add Variant</Button>
                     </div>
                     <div className="space-y-3">
                       {form.variants.map((variant: any, index: number) => (
                         <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-3 rounded-xl p-3 bg-gray-50">
-                          <Input
-                            value={variant.size}
-                            onChange={(e) => updateVariant(index, "size", e.target.value)}
-                            placeholder="Size e.g. 50ml"
-                            size="large"
-                            className="rounded-lg"
-                          />
-                          <InputNumber
-                            value={variant.price}
-                            onChange={(value) => updateVariant(index, "price", value)}
-                            placeholder="Price"
-                            size="large"
-                            className="w-full rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            className="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-100 transition-colors"
-                            onClick={() => removeVariant(index)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <Input value={variant.size} onChange={(e) => updateVariant(index, "size", e.target.value)} placeholder="Size e.g. 50ml" size="large" className="rounded-lg" />
+                          <InputNumber value={variant.price} onChange={(value) => updateVariant(index, "price", value)} placeholder="Price" size="large" className="w-full rounded-lg" />
+                          <button type="button" className="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-100" onClick={() => removeVariant(index)}><Trash2 size={16} /></button>
                         </div>
                       ))}
                     </div>
-                    {errors.variants && (
-                      <p className="text-red-500 text-xs mt-2">{errors.variants}</p>
-                    )}
+                    {errors.variants && <p className="text-red-500 text-xs mt-2">{errors.variants}</p>}
                   </div>
 
                   {/* Ingredients */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-semibold text-gray-700">Ingredients</label>
-                      <Button icon={<Plus size={16} />} onClick={() => addArrayField("ingredients")} className="rounded-lg">
-                        Add Ingredient
-                      </Button>
+                      <Button icon={<Plus size={16} />} onClick={() => addArrayField("ingredients")} className="rounded-lg">Add Ingredient</Button>
                     </div>
                     <div className="space-y-2">
                       {form.ingredients.map((item: string, index: number) => (
                         <div key={index} className="flex gap-2">
-                          <Input
-                            value={item}
-                            onChange={(e) => updateArrayField("ingredients", index, e.target.value)}
-                            placeholder="Enter ingredient"
-                            size="large"
-                            className="rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            className="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-100 transition-colors"
-                            onClick={() => removeArrayField("ingredients", index)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <Input value={item} onChange={(e) => updateArrayField("ingredients", index, e.target.value)} placeholder="Enter ingredient" size="large" className="rounded-lg" />
+                          <button type="button" className="bg-red-50 text-red-600 p-2 rounded-lg" onClick={() => removeArrayField("ingredients", index)}><Trash2 size={16} /></button>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Rich Text Editors */}
-                  <CommonEditor
-                    label="Description"
-                    value={form.description}
-                    onChange={(val) => setForm({ ...form, description: val })}
-                    height="200px"
-                  />
+                  {/* Editors */}
+                  <CommonEditor label="Description" value={form.description} onChange={(val) => setForm({ ...form, description: val })} height="200px" />
+                  <CommonEditor label="Usage Tips" value={form.usageTips} onChange={(val) => setForm({ ...form, usageTips: val })} height="150px" />
+                  <CommonEditor label="Scent Story" value={form.scentStory} onChange={(val) => setForm({ ...form, scentStory: val })} height="150px" />
+                  <CommonEditor label="Brand Manufacturer Info" value={form.brandManufacturerInfo} onChange={(val) => setForm({ ...form, brandManufacturerInfo: val })} height="150px" />
 
-                  <CommonEditor
-                    label="Usage Tips"
-                    value={form.usageTips}
-                    onChange={(val) => setForm({ ...form, usageTips: val })}
-                    height="150px"
-                  />
-
-                  <CommonEditor
-                    label="Scent Story"
-                    value={form.scentStory}
-                    onChange={(val) => setForm({ ...form, scentStory: val })}
-                    height="150px"
-                  />
-
-                  <CommonEditor
-                    label="Brand Manufacturer Info"
-                    value={form.brandManufacturerInfo}
-                    onChange={(val) => setForm({ ...form, brandManufacturerInfo: val })}
-                    height="150px"
-                  />
-
-                  {/* SEO Section */}
+                  {/* SEO */}
                   <div className="grid grid-cols-2 gap-4">
-                    <CommonInput
-                      label="Meta Title"
-                      value={form.metaTitle}
-                      onChange={(val) => setForm({ ...form, metaTitle: val })}
-                      placeholder="Enter meta title"
-                    />
-
-                    <CommonInput
-                      label="Slug"
-                      value={form.slug}
-                      onChange={(val) => setForm({ ...form, slug: val })}
-                      placeholder="Enter slug"
-                    />
+                    <CommonInput label="Meta Title" value={form.metaTitle} onChange={(val) => setForm({ ...form, metaTitle: val })} placeholder="Enter meta title" />
+                    <CommonInput label="Slug" value={form.slug} onChange={(val) => setForm({ ...form, slug: val })} placeholder="Enter slug" />
                   </div>
-
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Meta Description</label>
-                    <Input.TextArea
-                      value={form.metaDescription}
-                      onChange={(e) => setForm({ ...form, metaDescription: e.target.value })}
-                      rows={3}
-                      placeholder="Enter meta description"
-                      className="rounded-lg border-gray-200"
-                    />
+                    <Input.TextArea value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} rows={3} placeholder="Enter meta description" className="rounded-lg border-gray-200" />
                   </div>
-
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-semibold text-gray-700">Meta Keywords</label>
-                      <Button icon={<Plus size={16} />} onClick={() => addArrayField("metaKeywords")} className="rounded-lg">
-                        Add Keyword
-                      </Button>
+                      <Button icon={<Plus size={16} />} onClick={() => addArrayField("metaKeywords")} className="rounded-lg">Add Keyword</Button>
                     </div>
                     <div className="space-y-2">
                       {form.metaKeywords.map((item: string, index: number) => (
                         <div key={index} className="flex gap-2">
-                          <Input
-                            value={item}
-                            onChange={(e) => updateArrayField("metaKeywords", index, e.target.value)}
-                            placeholder="Enter keyword"
-                            size="large"
-                            className="rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            className="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-100 transition-colors"
-                            onClick={() => removeArrayField("metaKeywords", index)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <Input value={item} onChange={(e) => updateArrayField("metaKeywords", index, e.target.value)} placeholder="Enter keyword" size="large" className="rounded-lg" />
+                          <button type="button" className="bg-red-50 text-red-600 p-2 rounded-lg" onClick={() => removeArrayField("metaKeywords", index)}><Trash2 size={16} /></button>
                         </div>
                       ))}
                     </div>
@@ -552,219 +496,320 @@ if (initialValues?._id) {
 
                   {/* Status Toggles */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200">
-                      <div className="flex items-center gap-2">
-                        <Flame size={18} className="text-orange-500" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {form.isTrending ? "Trending Product" : "Not Trending"}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setForm({ ...form, isTrending: !form.isTrending })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                          form.isTrending ? "bg-primary-dark" : "bg-gray-300"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            form.isTrending ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                      <div className="flex items-center gap-2"><Flame size={18} className="text-orange-500" /><span className="text-sm font-medium">{form.isTrending ? "Trending" : "Not Trending"}</span></div>
+                      <button onClick={() => setForm({ ...form, isTrending: !form.isTrending })} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.isTrending ? "bg-gray-900" : "bg-gray-300"}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.isTrending ? "translate-x-6" : "translate-x-1"}`} />
                       </button>
                     </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200">
-                      <div className="flex items-center gap-2">
-                        <Star size={18} className="text-yellow-500" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {form.isFeatured ? "Featured Product" : "Not Featured"}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setForm({ ...form, isFeatured: !form.isFeatured })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                          form.isFeatured ? "bg-primary-dark" : "bg-gray-300"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            form.isFeatured ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                      <div className="flex items-center gap-2"><Star size={18} className="text-yellow-500" /><span className="text-sm font-medium">{form.isFeatured ? "Featured" : "Not Featured"}</span></div>
+                      <button onClick={() => setForm({ ...form, isFeatured: !form.isFeatured })} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.isFeatured ? "bg-gray-900" : "bg-gray-300"}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.isFeatured ? "translate-x-6" : "translate-x-1"}`} />
                       </button>
                     </div>
                   </div>
 
-                  <CommonFormActions
-                    onCancel={onCancel}
-                    onSubmit={handleSubmit}
-                    submitText={isEdit ? "Update Product" : "Create Product"}
-                    disabled={!form.name.trim() || !hasValidVariant || !form.coverimage}
-                    loading={loading}
-                  />
+                  <CommonFormActions onCancel={onCancel} onSubmit={handleSubmit} submitText={isEdit ? "Update Product" : "Create Product"} disabled={!form.name.trim() || !hasValidVariant || !form.coverimage} loading={loading} />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Preview Section */}
-          {(!showPreview || showPreview) && (
-            <div className={showPreview ? "block" : "block"}>
-              <div className="sticky top-24">
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                  {/* Preview Header */}
-                  <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg" style={{ backgroundColor: 'var(--primary-10)' }}>
-                          <ShoppingBag size={18} style={{ color: 'var(--primary-dark)' }} />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Live Preview</h3>
-                          <p className="text-xs text-gray-500">Real-time updates as you type</p>
-                        </div>
+          {/* Preview Section - EXACT MATCH to screenshot with ALL images */}
+          <div className={showPreview ? "block" : "block"}>
+            <div className="sticky top-24">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+                {/* Preview Header */}
+                <div className="px-5 py-3 border-b border-gray-100 bg-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center">
+                        <ShoppingBag size={14} className="text-white" />
                       </div>
-                      <div className="flex gap-2">
-                        {form.isTrending && (
-                          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-50 text-orange-600 text-xs">
-                            <Flame size={12} />
-                            Trending
-                          </div>
-                        )}
-                        {form.isFeatured && (
-                          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-50 text-yellow-600 text-xs">
-                            <Star size={12} />
-                            Featured
-                          </div>
-                        )}
+                      <div>
+                        <h3 className="font-semibold text-sm text-gray-900">Live Preview</h3>
+                        <p className="text-[10px] text-gray-400">Real-time product view</p>
                       </div>
                     </div>
+                    <div className="flex gap-1.5">
+                      {form.isTrending && <span className="px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 text-[10px] font-medium">🔥 Trending</span>}
+                      {form.isFeatured && <span className="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-600 text-[10px] font-medium">⭐ Featured</span>}
+                    </div>
                   </div>
+                </div>
 
-                  {/* Preview Content */}
-                  <div className="p-6">
-                    {!form.name && !form.coverimage ? (
-                      <div className="text-center py-12">
-                        <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-gray-50 flex items-center justify-center border-2 border-dashed border-gray-200">
-                          <Package size={32} className="text-gray-300" />
-                        </div>
-                        <h3 className="text-base font-semibold text-gray-900 mb-1">No product yet</h3>
-                        <p className="text-sm text-gray-500">Start filling the form to see preview</p>
+                {/* Product Card - with image carousel for multiple images */}
+                <div className="max-h-[calc(100vh-160px)] overflow-y-auto">
+                  {!form.name && !form.coverimage ? (
+                    <div className="text-center py-16 px-6">
+                      <div className="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gray-50 flex items-center justify-center border-2 border-dashed border-gray-200">
+                        <Package size={36} className="text-gray-300" />
                       </div>
-                    ) : (
-                      <div className="space-y-5">
-                        {/* Product Image */}
-                        {form.coverimage && (
-                          <div className="relative rounded-lg overflow-hidden bg-gray-100">
-                            <img
-                              src={form.coverimage}
-                              alt={form.name}
-                              className="w-full h-56 object-cover"
+                      <h3 className="font-semibold text-gray-900 mb-1">No product yet</h3>
+                      <p className="text-sm text-gray-400">Fill the form to see preview</p>
+                    </div>
+                  ) : (
+                    <div className="p-5">
+                      {/* Product Image Container - with carousel for multiple images */}
+                      <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 mb-4">
+                        {currentImage ? (
+                          <>
+                            <img 
+                              src={currentImage} 
+                              alt={form.name} 
+                              className="w-full aspect-square object-cover"
+                              onError={(e) => {
+                                console.error("Image failed to load:", currentImage);
+                                e.currentTarget.src = "https://placehold.co/600x600?text=No+Image";
+                              }}
                             />
+                            {/* Image Navigation Arrows - only show if multiple images */}
+                            {allImages.length > 1 && (
+                              <>
+                                <button
+                                  onClick={prevImage}
+                                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-all"
+                                >
+                                  <ChevronLeft size={16} />
+                                </button>
+                                <button
+                                  onClick={nextImage}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-all"
+                                >
+                                  <ChevronRight size={16} />
+                                </button>
+                                {/* Image Counter */}
+                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
+                                  {currentImageIndex + 1} / {allImages.length}
+                                </div>
+                              </>
+                            )}
+                            {/* Thumbnail strip for extra images */}
+                            {allImages.length > 1 && (
+                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                                {allImages.slice(0, 5).map(( idx) => (
+                                  <button
+                                    key={idx}
+                                    onClick={() => setCurrentImageIndex(idx)}
+                                    className={`w-1.5 h-1.5 rounded-full transition-all ${currentImageIndex === idx ? 'bg-white w-3' : 'bg-white/50'}`}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="w-full aspect-square bg-gray-100 flex items-center justify-center">
+                            <Package size={48} className="text-gray-300" />
+                          </div>
+                        )}
+                        {/* Gender Badge on Image */}
+                        <div className="absolute top-3 left-3">
+                          <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                            {form.gender === "men" ? "MEN" : form.gender === "women" ? "WOMEN" : "UNISEX"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Product Info - Exact layout from screenshot */}
+                      <div className="space-y-3">
+                        {/* Brand/Collection Name - Like "EM5™" */}
+                        {firstCollection && (
+                          <div className="flex items-center gap-0.5">
+                            <span className="text-base font-bold tracking-tight text-gray-800">{firstCollection}</span>
+                            <span className="text-[10px] align-top text-gray-400">™</span>
                           </div>
                         )}
 
-                        {/* Product Info */}
+                        {/* Product Name */}
+                        <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                          {form.name || "Product Name"}
+                        </h2>
+
+                        {/* Subtitle - Like "em is melting good?" */}
+                        {form.title && (
+                          <p className="text-xs text-gray-400 italic -mt-0.5">
+                            {form.title}
+                          </p>
+                        )}
+
+                        {/* Perfume Name with concentration */}
                         <div>
-                          <h2 className="text-xl font-bold text-gray-900 mb-1">
-                            {form.name || "Product Name"}
-                          </h2>
-                          {form.title && (
-                            <p className="text-xs text-gray-500 mb-2">{form.title}</p>
+                          <h3 className="text-sm font-semibold text-gray-800">
+                            {form.name || "Perfume"} Eau De Parfum
+                          </h3>
+                          {form.scentStory && (
+                            <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1">
+                              {form.scentStory.replace(/<[^>]*>/g, '').substring(0, 60)}
+                            </p>
                           )}
-                          
-                          {/* Gender Badge */}
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mb-3" style={{ backgroundColor: 'var(--primary-10)', color: 'var(--primary-dark)' }}>
-                            <Tag size={10} />
-                            {form.gender === "men" ? "For Men" : form.gender === "women" ? "For Women" : "Unisex"}
+                        </div>
+
+                        {/* Gender tag */}
+                        <div className="inline-block">
+                          <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                            {form.gender === "men" ? "MEN" : form.gender === "women" ? "WOMEN" : "UNISEX"}
+                          </span>
+                        </div>
+
+                        {/* Perfume name line - Like "Midnight Musk Perfume" */}
+                        {form.name && (
+                          <p className="text-sm font-medium text-gray-800">
+                            {form.name} Perfume
+                          </p>
+                        )}
+
+                        {/* Description line */}
+                        {form.description && (
+                          <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
+                            {form.description.replace(/<[^>]*>/g, '').substring(0, 100)}
+                          </p>
+                        )}
+
+                        {/* Ingredients/Notes - Like "Alcohol | Musk Oil | Essential Oils" */}
+                        {form.ingredients.some((i: string) => i.trim()) && (
+                          <div className="flex flex-wrap items-center gap-0 text-[10px] text-gray-400">
+                            {form.ingredients.filter((i: string) => i.trim()).slice(0, 3).map((ing: string, idx: number) => (
+                              <span key={idx} className="flex items-center">
+                                {idx > 0 && <span className="mx-1 text-gray-300">|</span>}
+                                <span>{ing}</span>
+                              </span>
+                            ))}
                           </div>
+                        )}
 
+                        {/* Scent Story & Usage Tips section */}
+                        <div className="space-y-0.5 text-[10px]">
+                          {form.scentStory && (
+                            <p className="text-gray-500">
+                              <span className="font-semibold text-gray-600">Scent Story:</span> {form.scentStory.replace(/<[^>]*>/g, '').substring(0, 50)}
+                            </p>
+                          )}
+                          {form.usageTips && (
+                            <p className="text-gray-500">
+                              <span className="font-semibold text-gray-600">Usage Tips:</span> {form.usageTips.replace(/<[^>]*>/g, '').substring(0, 50)}
+                            </p>
+                          )}
+                        </div>
 
-{/* Price */}
-{form.mrp && (
-  <div className="mb-3">
-    <span className="text-xl font-bold text-gray-900">
-      ₹{form.mrp}
-    </span>
+                        {/* Inspired by line */}
+                        {form.scentStory && (
+                          <p className="text-[10px] text-gray-400 italic">
+                            Inspired by {form.scentStory.replace(/<[^>]*>/g, '').substring(0, 45)}
+                          </p>
+                        )}
 
-    {lowestPrice !== null && lowestPrice < form.mrp && (
-      <>
-        <span className="text-xs text-gray-400 line-through ml-2">
-          ₹{form.mrp}
-        </span>
-        <span className="text-xs text-green-600 ml-1">
-          Save ₹{form.mrp - lowestPrice}
-        </span>
-      </>
-    )}
-  </div>
-)}
-
-                          {/* Variants */}
-                          {form.variants.some((v: any) => v.size) && (
-                            <div className="mb-3">
-                              <h4 className="text-xs font-semibold text-gray-600 mb-1">Sizes</h4>
-                              <div className="flex flex-wrap gap-1">
-                                {form.variants.filter((v: any) => v.size).slice(0, 3).map((variant: any, idx: number) => (
-                                  <span key={idx} className="px-2 py-0.5 rounded text-xs border" style={{ borderColor: 'var(--primary-30)' }}>
-                                    {variant.size} {variant.price && `₹${variant.price}`}
-                                  </span>
-                                ))}
-                                {form.variants.filter((v: any) => v.size).length > 3 && (
-                                  <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-                                    +{form.variants.filter((v: any) => v.size).length - 3}
-                                  </span>
-                                )}
-                              </div>
+                        {/* Price Section */}
+                        <div className="pt-1">
+                          {form.mrp && (
+                            <div className="flex items-baseline gap-2 flex-wrap">
+                              <span className="text-2xl font-bold text-gray-900">₹{form.mrp}</span>
+                              {lowestPrice !== null && lowestPrice < form.mrp && (
+                                <>
+                                  <span className="text-sm text-gray-400 line-through">₹{form.mrp}</span>
+                                  <span className="text-[11px] text-green-600 font-medium">Save ₹{form.mrp - lowestPrice}</span>
+                                </>
+                              )}
                             </div>
                           )}
+                          {form.mrp && (
+                            <>
+                              <div className="text-[10px] text-gray-400">M.R.P. {form.mrp}</div>
+                              <div className="text-[9px] text-gray-400">Inclusive of all taxes</div>
+                            </>
+                          )}
+                        </div>
 
-                          {/* Description Preview */}
+                        {/* Sizes/Variants - Like "50ml | 100ml" */}
+                        {form.variants.some((v: any) => v.size) && (
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            {form.variants.filter((v: any) => v.size).map((variant: any, idx: number) => (
+                              <button
+                                key={idx}
+                                onClick={() => setSelectedVariant(variant)}
+                                className={`px-2 py-0.5 rounded text-xs transition-all ${selectedVariant?.size === variant.size
+                                  ? 'bg-gray-900 text-white'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  }`}
+                              >
+                                {variant.size} {variant.price && `₹${variant.price}`}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Quantity and Add to Cart */}
+                        <div className="flex items-center gap-3 pt-2">
+                          <div className="flex items-center border border-gray-200 rounded-lg">
+                            <button
+                              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="w-8 text-center text-sm font-medium">{quantity}</span>
+                            <button
+                              onClick={() => setQuantity(quantity + 1)}
+                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors"
+                            >
+                              <PlusIcon size={14} />
+                            </button>
+                          </div>
+                          <button className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+                            Add To Cart
+                          </button>
+                        </div>
+
+                        {/* Expandable sections - Product Description, Usage Tips, Ingredients, Brand & Manufacturer Info */}
+                        <div className="border-t border-gray-100 pt-3 space-y-2">
                           {form.description && (
-                            <div className="mb-3">
-                              <h4 className="text-xs font-semibold text-gray-600 mb-1">Description</h4>
-                              <div 
-                                className="text-xs text-gray-600 line-clamp-2"
-                                dangerouslySetInnerHTML={{ __html: form.description }}
-                              />
-                            </div>
+                            <details className="group">
+                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
+                                Product Description
+                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
+                              </summary>
+                              <div className="text-[10px] text-gray-500 mt-1 pl-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: form.description }} />
+                            </details>
                           )}
-
-                          {/* Ingredients */}
+                          {form.usageTips && (
+                            <details className="group">
+                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
+                                Usage Tips
+                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
+                              </summary>
+                              <div className="text-[10px] text-gray-500 mt-1 pl-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: form.usageTips }} />
+                            </details>
+                          )}
                           {form.ingredients.some((i: string) => i.trim()) && (
-                            <div className="mb-3">
-                              <h4 className="text-xs font-semibold text-gray-600 mb-1">Key Ingredients</h4>
-                              <div className="flex flex-wrap gap-1">
-                                {form.ingredients.filter((i: string) => i.trim()).slice(0, 3).map((ingredient: string, idx: number) => (
-                                  <span key={idx} className="px-2 py-0.5 rounded-full text-xs" style={{ backgroundColor: 'var(--primary-10)', color: 'var(--primary-dark)' }}>
-                                    {ingredient}
-                                  </span>
+                            <details className="group">
+                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
+                                Ingredients
+                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
+                              </summary>
+                              <div className="text-[10px] text-gray-500 mt-1 pl-2">
+                                {form.ingredients.filter((i: string) => i.trim()).map((ing: string, idx: number) => (
+                                  <div key={idx}>• {ing}</div>
                                 ))}
-                                {form.ingredients.filter((i: string) => i.trim()).length > 3 && (
-                                  <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
-                                    +{form.ingredients.filter((i: string) => i.trim()).length - 3}
-                                  </span>
-                                )}
                               </div>
-                            </div>
+                            </details>
                           )}
-
-                          {/* Collections & Seasons */}
-                          {(form.collectionIds.length > 0 || form.seasonIds.length > 0) && (
-                            <div className="flex gap-3 pt-2 text-xs text-gray-500">
-                              {form.collectionIds.length > 0 && <span>{form.collectionIds.length} collections</span>}
-                              {form.seasonIds.length > 0 && <span>{form.seasonIds.length} seasons</span>}
-                              {form.scentIds.length > 0 && <span>{form.scentIds.length} scents</span>}
-                            </div>
+                          {form.brandManufacturerInfo && (
+                            <details className="group">
+                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
+                                Brand & Manufacturer Info
+                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
+                              </summary>
+                              <div className="text-[10px] text-gray-500 mt-1 pl-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: form.brandManufacturerInfo }} />
+                            </details>
                           )}
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
@@ -772,5 +817,3 @@ if (initialValues?._id) {
 };
 
 export default ProductFormPage;
-
-

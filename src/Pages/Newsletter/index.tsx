@@ -12,7 +12,7 @@ import NewsletterTable from "../../Components/Newsletter/NewsletterTable";
 const Newsletter = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [filters, setFilters] = useState({ search: "" });
-  const [statusToggle, setStatusToggle] = useState(true);
+  const [statusToggle] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const queryParams = { page: pagination.page, limit: pagination.limit, ...(filters.search && { search: filters.search }), status: statusToggle ? "active" : "inactive" };
   const { data, isLoading, refetch } = Queries.useGetNewsletters(queryParams);
@@ -30,7 +30,17 @@ const Newsletter = () => {
   return (
     <div className="user-page">
       <CommonPageHeader title={PAGE_TITLE.NEWSLETTER.TITLE} subtitle={PAGE_TITLE.NEWSLETTER.SUB_TITLE} />
-      <CommonSearchFilterBar total={total} label={PAGE_TITLE.NEWSLETTER.LABEL} search={filters.search} onSearchChange={(val) => setFilters({ search: val })} onSearchSubmit={refetch} status={statusToggle} onStatusChange={setStatusToggle} />
+    <CommonSearchFilterBar
+  total={total}
+  label={PAGE_TITLE.NEWSLETTER.LABEL}
+
+  search={filters.search}
+  onSearchChange={(val) => setFilters({ search: val })}
+  onSearchSubmit={refetch}
+
+  showStatusToggle={false}   // 🔥 THIS FIX
+  showTotal={true}
+/>
       <NewsletterTable data={newsletters} loading={isLoading} page={pagination.page} limit={pagination.limit} onDelete={(id: string) => setDeleteId(id)} />
       <ConfirmModal open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleteNewsletter.isPending} />
       <CommonPagination page={pagination.page} limit={pagination.limit} total={total} currentCount={newsletters.length} label={PAGE_TITLE.NEWSLETTER.LABEL} onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))} onLimitChange={(limit) => setPagination({ page: 1, limit, total })} />

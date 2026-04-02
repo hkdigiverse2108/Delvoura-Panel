@@ -134,8 +134,8 @@ const Orders = () => {
                 <p className="text-sm text-gray-500 font-medium">Total Orders</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">{total}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <ShoppingBag className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary-10 rounded-xl flex items-center justify-center">
+                <ShoppingBag className="w-6 h-6 text-primary" />
               </div>
             </div>
           </div>
@@ -147,8 +147,8 @@ const Orders = () => {
                 <p className="text-sm text-gray-500 font-medium">Total Revenue</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">₹{totalRevenue.toLocaleString()}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-primary-10 rounded-xl flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-primary" />
               </div>
             </div>
           </div>
@@ -159,20 +159,20 @@ const Orders = () => {
               <p className="text-sm text-gray-500 font-medium">Active Filters</p>
               <div className="flex flex-wrap gap-2 mt-1">
                 {selectedStatus && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg text-sm">
-                    <span className="text-blue-600 font-medium">Status: {selectedStatusObj?.label}</span>
-                    <button onClick={clearStatusFilter} className="hover:bg-blue-100 rounded-full p-0.5">
-                      <X size={14} className="text-blue-600" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-10 rounded-lg text-sm">
+                    <span className="text-primary font-medium">Status: {selectedStatusObj?.label}</span>
+                    <button onClick={clearStatusFilter} className="hover:bg-primary-10 rounded-full p-0.5">
+                      <X size={14} className="text-primary" />
                     </button>
                   </div>
                 )}
                 {(dateRange.start || dateRange.end) && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg text-sm">
-                    <span className="text-blue-600 font-medium">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-10 rounded-lg text-sm">
+                    <span className="text-primary font-medium">
                       Date: {dateRange.start} to {dateRange.end}
                     </span>
-                    <button onClick={clearDateFilter} className="hover:bg-blue-100 rounded-full p-0.5">
-                      <X size={14} className="text-blue-600" />
+                    <button onClick={clearDateFilter} className="hover:bg-primary-10 rounded-full p-0.5">
+                      <X size={14} className="text-primary" />
                     </button>
                   </div>
                 )}
@@ -202,7 +202,7 @@ const Orders = () => {
                   placeholder="Search by order ID or customer..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-20)] focus:border-[var(--primary)]"
                 />
               </div>
             </div>
@@ -255,7 +255,7 @@ const Orders = () => {
               type="primary" 
               onClick={handleApplyFilters}
               size="large"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary-10 hover:bg-primary-10"
             >
               Apply Filters
             </Button>

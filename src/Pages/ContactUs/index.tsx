@@ -29,7 +29,18 @@ const ContactUs = () => {
   return (
     <div className="user-page">
       <CommonPageHeader title={PAGE_TITLE.CONTACT_US.TITLE} subtitle={PAGE_TITLE.CONTACT_US.SUB_TITLE} />
-      <CommonSearchFilterBar total={total} label="Contact Us" search={filters.search} onSearchChange={(val: string) => setFilters((prev) => ({ ...prev, search: val }))} onSearchSubmit={refetch} status={true} onStatusChange={() => {}} />
+     <CommonSearchFilterBar
+  total={total}
+  label={PAGE_TITLE.NEWSLETTER.LABEL}
+
+  search={filters.search}
+  onSearchChange={(val) => setFilters({ search: val })}
+  onSearchSubmit={refetch}
+
+  showStatusToggle={false}   // 🔥 THIS FIX
+  showTotal={true}
+/>
+     
       <ContactUsTable data={messages} loading={isLoading} page={pagination.page} limit={pagination.limit} onDelete={(id: string) => setDeleteId(id)} />
       <ConfirmModal open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleteMessage.isPending} />
       <CommonPagination page={pagination.page} limit={pagination.limit} total={total} currentCount={messages.length} label={PAGE_TITLE.CONTACT_US.LABEL} onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))} onLimitChange={(limit) => setPagination({ page: 1, limit, total })} />
