@@ -1,74 +1,150 @@
-import { Card, Input, Button } from "antd";
-import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+"use client";
+
+import { Card, Input, Button, message } from "antd";
+import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Mutations } from "../../Api/Mutations";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const ForgotPassword = () => {
-  const { register, handleSubmit } = useForm();
+  const { control, handleSubmit } = useForm();
+  const [step, setStep] = useState<"email" | "reset">("email");
+  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const forgotPasswordMutation = Mutations.useForgotPassword();
+  const resetPasswordMutation = Mutations.useResetPassword();
+
+  const onSubmitEmail = async (data: any) => {
+    try {
+      await forgotPasswordMutation.mutateAsync(data);
+      message.success("OTP sent to your email");
+      setEmail(data.email);
+      setStep("reset");
+    } catch (err: any) {
+      message.error(err?.message || "Failed to send OTP");
+    }
+  };
+
+  const onSubmitReset = async (data: any) => {
+    try {
+      await resetPasswordMutation.mutateAsync({ email, otp: Number(data.otp), password: data.password });
+      message.success("Password reset successful");
+      navigate("/login");
+    } catch (err: any) {
+      message.error(err?.message || "Reset failed");
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen" 
-         style={{ background: 'linear-gradient(135deg, var(--primary-10) 0%, var(--white) 100%)' }}>
-      <Card className="w-full max-w-md admin-card p-8 relative overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen p-4"
+      style={{ background: "linear-gradient(135deg, var(--primary-10) 0%, var(--white) 100%)" }}>
 
-        <Link to="/login" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-300 mb-6 group">
-          <ArrowLeftOutlined className="text-sm group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm">Back to Login</span>
-        </Link>
+      <Card className="w-full max-w-md"
+        style={{ borderRadius: "16px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)" }}>
 
-
-        <div className="text-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-primary-10 flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-4xl">🔐</span>
+        <div className="text-center mb-10">
+          <div className="flex justify-center mt-10 mb-4">
+            <img src="../../../assets/images/logo/LogoImg.png" alt="Delvoura Logo" className="h-8 w-auto" />
           </div>
-          <h2 className="text-2xl font-bold text-black mb-2">
-            Forgot Password?
-          </h2>
-          <p className="text-gray-500 text-sm max-w-xs mx-auto">
-            No worries! Enter your email and we'll send you OTP to reset your password.
+          <p className="text-sm font-medium" style={{ color: "var(--primary)" }}>Perfume Admin Panel</p>
+          <h2 className="text-xl font-semibold mt-4" style={{ color: "var(--primary)" }}>Reset Password</h2>
+          <p className="text-sm text-gray-500 mt-2">
+            {step === "email" ? "Enter your email to receive OTP" : `Enter OTP sent to ${email}`}
           </p>
         </div>
 
-        {/* Form Section */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Email Address
-            </label>
-            <Input
-              placeholder="Enter your registered email"
-              {...register("email")}
-              className="admin-input h-12"
+        {step === "email" && (
+          <form onSubmit={handleSubmit(onSubmitEmail)} className="space-y-4">
+            <Controller
+              name="email"
+              control={control}
+              rules={{
+                required: "Email is required",
+                pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: "Invalid email address" }
+              }}
+              render={({ field, fieldState }) => (
+                <div>
+                  <Input {...field} placeholder="Enter your email" size="large"
+                    status={fieldState.error ? "error" : ""} className="rounded-lg"
+                    style={{ borderColor: fieldState.error ? "var(--red)" : undefined, fontSize: "14px" }} />
+                  {fieldState.error && <p className="text-xs mt-1" style={{ color: "var(--red)" }}>{fieldState.error.message}</p>}
+                </div>
+              )}
             />
-          </div>
 
-          <Button htmlType="submit" block className="admin-btn h-12 text-base font-semibold">
-            Send OTP
-          </Button>
+            <Button htmlType="submit" block size="large" loading={forgotPasswordMutation.isPending}
+              style={{ backgroundColor: "var(--primary)", borderColor: "var(--primary)", height: "40px", fontSize: "14px", fontWeight: 600 }}
+              type="primary" className="rounded-lg hover:opacity-90 theme-btn">
+              Send OTP
+            </Button>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-500">
-              Didn't receive OTP?{" "}
-              <button type="button" className="text-primary font-semibold hover:text-black transition-colors duration-300">
-                Resend
-              </button>
-            </p>
-          </div>
-        </form>
+            <div className="text-center">
+              <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate("/login")}
+                style={{ color: "var(--primary)", padding: 0 }} className="text-sm">
+                Back to Login
+              </Button>
+            </div>
+          </form>
+        )}
 
-        {/* Security Note */}
-        <div className="flex items-center justify-center gap-2 mt-6 p-3 bg-primary-10 rounded-lg">
-          <p className="text-xs text-gray-600">
-            We'll never share your email with anyone else.
-          </p>
+        {step === "reset" && (
+          <form onSubmit={handleSubmit(onSubmitReset)} className="space-y-4">
+
+            <Controller
+              name="otp"
+              control={control}
+              rules={{
+                required: "OTP is required",
+                minLength: { value: 6, message: "OTP must be 6 digits" },
+                maxLength: { value: 6, message: "OTP must be 6 digits" }
+              }}
+              render={({ field, fieldState }) => (
+                <div>
+                  <Input {...field} placeholder="Enter OTP" size="large" maxLength={6}
+                    status={fieldState.error ? "error" : ""} className="rounded-lg text-center"
+                    style={{ borderColor: fieldState.error ? "var(--red)" : undefined, fontSize: "14px", letterSpacing: "2px" }} />
+                  {fieldState.error && <p className="text-xs mt-1" style={{ color: "var(--red)" }}>{fieldState.error.message}</p>}
+                </div>
+              )}
+            />
+
+            <Controller
+              name="password"
+              control={control}
+              rules={{ required: "Password is required", minLength: { value: 6, message: "Password must be at least 6 characters" } }}
+              render={({ field, fieldState }) => (
+                <div>
+                  <Input.Password {...field} placeholder="Enter new password" size="large"
+                    status={fieldState.error ? "error" : ""} className="rounded-lg"
+                    style={{ borderColor: fieldState.error ? "var(--red)" : undefined, fontSize: "14px" }} />
+                  {fieldState.error && <p className="text-xs mt-1" style={{ color: "var(--red)" }}>{fieldState.error.message}</p>}
+                </div>
+              )}
+            />
+
+            <Button htmlType="submit" block size="large" loading={resetPasswordMutation.isPending}
+              style={{ backgroundColor: "var(--primary)", borderColor: "var(--primary)", height: "40px", fontSize: "14px", fontWeight: 600 }}
+              className="rounded-lg hover:opacity-90">
+              Reset Password
+            </Button>
+
+            <div className="text-center">
+              <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate("/login")}
+                style={{ color: "var(--primary)", padding: 0 }} className="text-sm">
+                Back to Login
+              </Button>
+            </div>
+          </form>
+        )}
+
+        <div className="flex justify-center gap-2 mt-6">
+          <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: "var(--primary-30)", animationDelay: "0s" }} />
+          <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: "var(--primary-30)", animationDelay: "0.2s" }} />
+          <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: "var(--primary-30)", animationDelay: "0.4s" }} />
         </div>
 
-        {/* Decorative Background Element */}
-        <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-primary-10 rounded-full opacity-50"></div>
       </Card>
     </div>
   );

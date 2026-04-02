@@ -1,76 +1,65 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
-import CommonUploadModal from "../uploads/CommonUploadModal";
+import { Trash2 } from "lucide-react";
+import { CommonUploadModal } from "../uploads";
 
-const ExtraImagesGallery = ({ images, setImages }: any) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+interface Props {
+  images: string[];
+  setImages: (images: string[]) => void;
+}
 
-  const handleSelect = (urls: string[]) => {
-    if (openIndex === null) return;
-
-    const updated = [...images];
-
-    let currentIndex = openIndex;
-
-    for (let i = 0; i < urls.length; i++) {
-      if (currentIndex >= updated.length) break;
-      updated[currentIndex] = urls[i];
-      currentIndex++;
-    }
-
-    setImages(updated);
-    setOpenIndex(null);
-  };
+const ExtraImagesGallery = ({ images, setImages }: Props) => {
+  const [open, setOpen] = useState(false);
 
   const removeImage = (index: number) => {
-    const updated = [...images];
-    updated[index] = "";
+    const updated = images.filter((_, i) => i !== index);
     setImages(updated);
   };
 
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-3">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
         Extra Images
       </label>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {images.map((img, index) => (
+          <div
+            key={index}
+            className="relative h-24 rounded-lg overflow-hidden border"
+          >
+            <img
+              src={img}
+              className="w-full h-full object-cover"
+            />
 
-      <div className="grid grid-cols-4 gap-4">
-        {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="relative">
-            {!images[index] ? (
-              <div
-                onClick={() => setOpenIndex(index)}
-                className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-[var(--primary,#7c3aed)] hover:bg-gray-50"
-              >
-                <Plus className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-gray-500 text-xs">Add Image</p>
-              </div>
-            ) : (
-              <div className="relative group">
-                <img
-                  src={images[index]}
-                  className="w-full h-32 object-cover rounded-xl border"
-                />
-                <button
-                  onClick={() => removeImage(index)}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            )}
+            <button
+              onClick={() => removeImage(index)}
+              className="absolute top-1 right-1 bg-white p-1 rounded"
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
         ))}
       </div>
 
+      <button
+        type="button"
+        className="btn-add-product mt-3"
+        onClick={() => setOpen(true)}
+      >
+        Add Images
+      </button>
+
       <CommonUploadModal
-        open={openIndex !== null}
-        multiple={true}
-        selected={images.filter(Boolean)}
-        onClose={() => setOpenIndex(null)}
-        onSave={handleSelect}
+        open={open}
+        multiple
+        selected={images}
+        onClose={() => setOpen(false)}
+        onSave={(urls) => {
+          setImages(urls);
+          setOpen(false);
+        }}
       />
     </div>
   );

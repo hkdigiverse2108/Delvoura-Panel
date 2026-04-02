@@ -3,13 +3,14 @@
 import React from "react";
 
 interface CommonTableProps {
-  title: string;
+  title?: string;
   icon?: React.ReactNode;
   action?: React.ReactNode;
   columns: {
     title: string;
     key: string;
-    render: (item: any, index?: number) => React.ReactNode;
+    dataIndex?: string;
+    render?: (item: any, index?: number) => React.ReactNode;
     align?: "left" | "center" | "right";
     className?: string;
     width?: number | string;
@@ -20,7 +21,6 @@ interface CommonTableProps {
 }
 
 const CommonTable = ({
-
   columns,
   data,
   loading = false,
@@ -28,10 +28,9 @@ const CommonTable = ({
 }: CommonTableProps) => {
   return (
     <div className="table-container">
-   
-
       <div className="table-scroll">
         <table className="custom-table">
+
           <thead>
             <tr>
               {columns.map((column) => (
@@ -81,13 +80,20 @@ const CommonTable = ({
                       className={column.className || ""}
                       style={{ textAlign: column.align || "left" }}
                     >
-                      {column.render(item, index)}
+
+                      {column.render
+                        ? column.render(item, index)
+                        : column.dataIndex
+                        ? item[column.dataIndex]
+                        : null}
+
                     </td>
                   ))}
                 </tr>
               ))
             )}
           </tbody>
+
         </table>
       </div>
     </div>

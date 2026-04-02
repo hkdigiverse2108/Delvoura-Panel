@@ -1,135 +1,135 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Pencil, Save, X, FileText } from "lucide-react";
+import { CommonEditor } from "../../Components/common/commonForm";
 import { Mutations } from "../../Api/Mutations";
 import { Queries } from "../../Api/Queries";
-import {
-  CommonPageHeader,
-  CommonPagination,
-} from "../../Components";
-
-import { PAGE_TITLE } from "../../Constants";
-import { ReturnExchangeForm, ReturnExchangeTable } from "../../Components/ReturnExchange";
-import CommonSearchFilterBar from "../../Components/common/CommonSearchFillterBar";
 
 const ReturnExchange = () => {
-  const [mode, setMode] = useState<"list" | "form">("list");
-  const [editData, setEditData] = useState<any>(null);
+  const [content, setContent] = useState("");
+  const [savedContent, setSavedContent] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-  });
+  const { data, refetch, error } =
+    Queries.useGetReturnExchange();
 
-  const [filters, setFilters] = useState({ search: "" });
-  const [statusToggle, setStatusToggle] = useState(true);
+  const addEditMutation =
+    Mutations.useAddEditReturnExchange();
 
-  const params = {
-    page: pagination.page,
-    limit: pagination.limit,
-    ...(filters.search && { search: filters.search }),
-    status: statusToggle ? "active" : "inactive",
-  };
+ useEffect(() => {
+  const responseArray = data?.data?.return_exchange_data;
 
-  const { data, isLoading, refetch } =
-    Queries.useGetReturnExchanges(params);
-
-  const list = data?.data?.return_exchange_data || [];
-  const total = data?.data?.totalData || 0;
-
-  const add = Mutations.useAddReturnExchange();
-  const update = Mutations.useUpdateReturnExchange();
-  const remove = Mutations.useDeleteReturnExchange();
-
-  const handleSubmit = async (values: any) => {
-    if (editData) {
-      await update.mutateAsync({
-        ...values,
-        returnExchangeId: editData._id,
-      });
-    } else {
-      await add.mutateAsync(values);
-    }
-
-    setMode("list");
-    setEditData(null);
-    refetch();
-  };
-
-  const handleDelete = async (id: string) => {
-    await remove.mutateAsync(id);
-    refetch();
-  };
-
-  const handleToggle = async (item: any) => {
-    await update.mutateAsync({
-      returnExchangeId: item._id,
-      question: item.question,
-      answer: item.answer,
-      isActive: !item.isActive,
-    });
-    refetch();
-  };
-
-  if (mode === "form") {
-    return (
-      <ReturnExchangeForm
-        initialValues={editData}
-        onSubmit={handleSubmit}
-        onBack={() => {
-          setMode("list");
-          setEditData(null);
-        }}
-      />
-    );
+  if (Array.isArray(responseArray) && responseArray.length > 0) {
+    setContent(responseArray[0].content || "");
+    setSavedContent(responseArray[0].content || "");
+    setIsEditing(false);
   }
+}, [data]);
+
+  useEffect(() => {
+    if (error) {
+      setContent("");
+      setSavedContent("");
+      setIsEditing(true);
+    }
+  }, [error]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setContent(savedContent);
+  };
+
+  const handleCancel = () => {
+    setContent(savedContent);
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    if (!content.trim()) return;
+
+    await addEditMutation.mutateAsync({
+      content,
+    });
+
+    setSavedContent(content);
+    setIsEditing(false);
+    refetch();
+  };
 
   return (
-    <div>
-      <CommonPageHeader
-        title={PAGE_TITLE.RETURN_EXCHANGE.TITLE}
-        buttonText={PAGE_TITLE.RETURN_EXCHANGE.BUTTON_TEXT}
-        buttonIcon={<Plus />}
-        onButtonClick={() => setMode("form")}
-      />
+    <div className="user-page w-full">
+      <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-gray-100">
+            <FileText size={18} />
+          </div>
 
-      <CommonSearchFilterBar
-        total={total}
-        label="Return Exchanges"
-        search={filters.search}
-        onSearchChange={(val) => setFilters({ search: val })}
-        onSearchSubmit={refetch}
-        status={statusToggle}
-        onStatusChange={setStatusToggle}
-      />
+          <div>
+            <h2 className="text-lg font-semibold">
+              Return & Exchange
+            </h2>
+            <p className="text-sm text-gray-500">
+              Add, preview and edit content
+            </p>
+          </div>
+        </div>
 
-      <ReturnExchangeTable
-        data={list}
-        loading={isLoading}
-        page={pagination.page}
-        limit={pagination.limit}
-        onEdit={(item: any) => {
-          setEditData(item);
-          setMode("form");
-        }}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggle}
-      />
+        {/* Editor */}
+        <div className="w-full border border-gray-200 rounded-lg">
+          <CommonEditor
+            label=""
+            value={content}
+            onChange={(val) => {
+              if (isEditing) setContent(val);
+            }}
+            height="500px"
+            readOnly={!isEditing}
+          />
+        </div>
 
-      <CommonPagination
-        page={pagination.page}
-        limit={pagination.limit}
-        total={total}
-        currentCount={list.length}
-        onPageChange={(page) =>
-          setPagination((p) => ({ ...p, page }))
-        }
-        onLimitChange={(limit) =>
-          setPagination({ page: 1, limit, total })
-        }
-      />
+        {/* Buttons */}
+        <div className="mt-4 flex justify-end items-center gap-3">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition"
+              >
+                <span className="flex items-center gap-2">
+                  <X size={15} />
+                  Cancel
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={!content.trim()}
+                className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  <Save size={15} />
+                  Save
+                </span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition"
+            >
+              <span className="flex items-center gap-2">
+                <Pencil size={15} />
+                Edit
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -57,19 +57,15 @@ export const URL_KEYS = {
   UPLOAD: {
     ADD: "/upload/",
   },
-
-  TOPBAR: {
-  GET: "/topbar/",
+TOPBAR: {
+  GET: "/topbar",
   ADD_EDIT: "/topbar/add-edit",
 },
 
 TERMS_SERVICE: {
-  GET_ALL: "/terms-of-service/",
-  ADD: "/terms-of-service/add",
-  UPDATE: "/terms-of-service/edit",
-  DELETE: "/terms-of-service/:id",
+  GET: "/terms-of-service/",
+  ADD_EDIT: "/terms-of-service/add-edit",
 },
-
 INSTAGRAM: {
   GET_ALL: "/instagram/",
   ADD: "/instagram/add",
@@ -78,30 +74,52 @@ INSTAGRAM: {
 },
 
 TERMS_CONDITIONS: {
-  GET_ALL: "/terms-conditions",
-  ADD: "/terms-conditions/add",
-  UPDATE: "/terms-conditions/edit",
-  DELETE: "/terms-conditions/:id",
+  GET: "/terms-conditions/",
+  ADD_EDIT: "/terms-conditions/add-edit",
 },
 
 PRIVACY_POLICY: {
   GET_ALL: "/privacy-policy/",
-  ADD: "/privacy-policy/add",
-  UPDATE: "/privacy-policy/edit",
-  DELETE: "/privacy-policy/:id",
+  ADD_EDIT: "/privacy-policy/add-edit",
 },
 
 REFUND_POLICY: {
   GET_ALL: "/refund-policy/",
-  ADD: "/refund-policy/add",
-  UPDATE: "/refund-policy/edit",
-  DELETE: "/refund-policy/:id",
+  ADD_EDIT: "/refund-policy/add-edit",
 },
 
 RETURN_EXCHANGE: {
   GET_ALL: "/return-exchange/",
-  ADD: "/return-exchange/add",
-  UPDATE: "/return-exchange/edit",
-  DELETE: "/return-exchange/:id",
+  ADD_EDIT: "/return-exchange/add-edit",
+},
+
+
+CONTACT_US: {
+  GET_ALL: "/contact-us/",
+  DELETE: "/contact-us/:id",
+},
+
+NEWSLETTER: {
+  GET_ALL: "/newsletter/",
+  DELETE: "/newsletter/:id",
+},
+
+RATING: {
+  GET_ALL: "/rating/",
+  ADD: "/rating/add",
+  UPDATE: "/rating/edit",
+  DELETE: "/rating/:id",
+},
+
+SETTINGS: {
+  GET: "/settings",
+  ADD_EDIT: "/settings/add-edit",
+},
+
+// ************ ORDER ************
+ORDER: {
+  BASE: "/order",
+  GET_ALL: "/order",
+  GET_ONE: "/order/:id",
 },
 };

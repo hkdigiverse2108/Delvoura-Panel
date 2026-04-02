@@ -10,6 +10,7 @@ interface Props {
   onChange: (val: string) => void;
   error?: string;
   height?: string;
+  readOnly?: boolean; 
 }
 
 const CommonEditor = ({
@@ -33,7 +34,7 @@ const CommonEditor = ({
 
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <label className="block text-sm font-semibold text-gray-700 ">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
 

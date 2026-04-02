@@ -15,6 +15,12 @@ import TermsConditionsPage from "../Pages/TermsConditions";
 import PrivacyPolicy from "../Pages/PrivacyPolicy";
 import RefundPolicy from "../Pages/RefundPolice";
 import ReturnExchange from "../Pages/ReturnExchange";
+import ContactUs from "../Pages/ContactUs";
+import Newsletter from "../Pages/Newsletter";
+import RatingPage from "../Pages/Rating";
+import SettingsPage from "../Pages/Settings";
+import Orders from "../Pages/Order";
+import OrderDetails from "../Components/Order/OrderDetail";
 
 
 
@@ -31,9 +37,41 @@ import ReturnExchange from "../Pages/ReturnExchange";
   { path: ROUTES.TERMS_SERVICE.BASE, name: PAGE_TITLE.TERMS_SERVICE.TITLE, element: < TermsService/> },
   { path: ROUTES.INSTAGRAM.BASE, name: PAGE_TITLE.INSTAGRAM.BASE ,element: < InstagramPage/> },
   { path: ROUTES.TERMS_CONDITIONS.BASE,element: < TermsConditionsPage/> },
-  { path: ROUTES.PRIVACY_POLICY.BASE, name: PAGE_TITLE.PRIVACY_POLICY.BASE , element :< PrivacyPolicy/> },
-  { path: ROUTES.REFUND_POLICY.BASE, name: PAGE_TITLE.REFUND_POLICY.BASE , element :< RefundPolicy/> },
-  { path: ROUTES.RETURN_EXCHANGE.BASE, name: PAGE_TITLE.RETURN_EXCHANGE.BASE , element :< ReturnExchange/> },
+  { path: ROUTES.PRIVACY_POLICY.BASE, name: PAGE_TITLE.PRIVACY_POLICY.TITLE , element :< PrivacyPolicy/> },
+  { path: ROUTES.REFUND_POLICY.BASE, name: PAGE_TITLE.REFUND_POLICY.TITLE , element :< RefundPolicy/> },
+  { path: ROUTES.RETURN_EXCHANGE.BASE, name: PAGE_TITLE.RETURN_EXCHANGE.TITLE , element :< ReturnExchange/> },
+  { 
+  path: ROUTES.CONTACT_US.BASE,
+  name: PAGE_TITLE.CONTACT_US.BASE,
+  element: <ContactUs />
+},
+  { 
+  path: ROUTES.NEWSLETTER.BASE,
+  name: PAGE_TITLE.NEWSLETTER.BASE,
+  element: <Newsletter />
+},
+  { 
+  path: ROUTES.RATING.BASE,
+  name: PAGE_TITLE.RATING.BASE,
+  element: <RatingPage />
+},
+  { 
+  path: ROUTES.SETTINGS.BASE,
+  name: "Setting",
+  element: <SettingsPage />
+},
+  { 
+  path: ROUTES.ORDERS,
+  name: "Order",
+  element: <Orders />
+},
+  { 
+  path: ROUTES.ORDER_DETAILS,
+  name: "Setting",
+  element: <OrderDetails  />
+},
+
+
 
 ];
 

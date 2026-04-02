@@ -121,3 +121,22 @@ body {
 .ant-menu-item{
    flex: none !important;
 }
+
+
+/* MOBILE SIDEBAR OVERLAY */
+
+@media (max-width: 920px) {
+
+  .mobile-sidebar {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    height: 100vh !important;
+    z-index: 1000;
+  }
+
+  .ant-layout-has-sider {
+    flex-direction: column !important;
+  }
+
+}

@@ -1,8 +1,12 @@
 export const KEYS = {
   AUTH: {
-    SIGNIN: "admin-signin",
-    VERIFY_OTP: "verify-otp",   
-    CHANGE_PASSWORD: "change-password",
+    SIGNIN: "signin",
+    VERIFY_OTP: "verify_otp",
+    CHANGE_PASSWORD: "change_password",
+
+    // ✅ ADD THIS
+    FORGOT_PASSWORD: "forgot_password",
+    RESET_PASSWORD: "reset_password",
   },
 
 
@@ -52,15 +56,13 @@ export const KEYS = {
     DELETE: "delete_blog",
   },
 TOPBAR: {
-  GET: "get_topbar",
-  ADD_EDIT: "add_edit_topbar",
+  GET: "get-topbar",
+  ADD_EDIT: "add-edit-topbar",
 },
 
 TERMS_SERVICE: {
-  GET_ALL: "get_terms_service",
-  ADD: "add_terms_service",
-  UPDATE: "update_terms_service",
-  DELETE: "delete_terms_service",
+  GET: "get_terms_service",
+  ADD_EDIT: "add_edit_terms_service",
 },
 
 INSTAGRAM: {
@@ -71,30 +73,50 @@ INSTAGRAM: {
 },
 
 TERMS_CONDITIONS: {
-  GET_ALL: "GET_ALL_TERMS_CONDITIONS",
-  ADD: "ADD_TERMS_CONDITIONS",
-  UPDATE: "UPDATE_TERMS_CONDITIONS",
-  DELETE: "DELETE_TERMS_CONDITIONS",
+  GET: "get_terms_conditions",
+  ADD_EDIT: "add_edit_terms_conditions",
 },
 
 PRIVACY_POLICY: {
   GET_ALL: "get_privacy_policy",
-  ADD: "add_privacy_policy",
-  UPDATE: "update_privacy_policy",
-  DELETE: "delete_privacy_policy",
+  ADD_EDIT: "add_edit_privacy_policy",
 },
-
 REFUND_POLICY: {
-  GET_ALL: "get_refund_policies",
-  ADD: "add_refund_policy",
-  UPDATE: "update_refund_policy",
-  DELETE: "delete_refund_policy",
+  GET_ALL: "get_refund_policy",
+  ADD_EDIT: "add_edit_refund_policy",
 },
 
 RETURN_EXCHANGE: {
-  GET_ALL: "get_return_exchanges",
-  ADD: "add_return_exchange",
-  UPDATE: "update_return_exchange",
-  DELETE: "delete_return_exchange",
+  GET_ALL: "get_return_exchange",
+  ADD_EDIT: "add_edit_return_exchange",
+},
+
+ CONTACT_US: {
+  GET_ALL: "get_contact_us",
+  DELETE: "delete_contact_us",
+},
+  
+NEWSLETTER: {
+  GET_ALL: "get_newsletters",
+  DELETE: "delete_newsletter",
+},
+
+RATING: {
+  GET_ALL: "get_ratings",
+  ADD: "add_rating",
+  UPDATE: "update_rating",
+  DELETE: "delete_rating",
+},
+
+SETTINGS: {
+  GET: "get-settings",
+  ADD_EDIT: "add-edit-settings",
+},
+
+// ************ ORDER ************
+ORDER: {
+  BASE: "ORDER",
+  GET_ALL: "GET_ALL_ORDER",
+  GET_ONE: "GET_ONE_ORDER",
 },
 };

@@ -1,23 +1,22 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
 import { Mutations } from "../../Api/Mutations";
 import {
   CommonPageHeader,
   CommonPagination,
-  
 } from "../../Components";
 import CommonSearchFilterBar from "../../Components/common/CommonSearchFillterBar";
 import UserTable from "../../Components/User/UserTable";
 import UserForm from "../../Components/User/UserForm";
 import { PAGE_TITLE } from "../../Constants";
 import { Queries } from "../../Api/Queries";
+import ConfirmModal from "../../Components/common/ConfirmModal";
 
 const User = () => {
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState<any>(null);
+ const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -48,7 +47,7 @@ const User = () => {
   const updateUser = Mutations.useUpdateUser();
   const deleteUser = Mutations.useDeleteUser();
 
-
+  // ✅ ONLY EDIT USER
   const handleSubmit = async (values: any) => {
     try {
       await updateUser.mutateAsync({
@@ -63,17 +62,17 @@ const User = () => {
       console.error("Update error:", error);
     }
   };
+const handleDelete = async () => {
+  if (!deleteId) return;
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      try {
-        await deleteUser.mutateAsync(id);
-        refetch();
-      } catch (error) {
-        console.error("Delete error:", error);
-      }
-    }
-  };
+  try {
+    await deleteUser.mutateAsync(deleteId);
+    setDeleteId(null);
+    refetch();
+  } catch (error) {
+    console.error("Delete error:", error);
+  }
+};
 
   const handleToggleStatus = async (item: any) => {
     try {
@@ -108,16 +107,12 @@ const User = () => {
 
   return (
     <div className="user-page">
-      <CommonPageHeader
-        title={PAGE_TITLE.USERS.TITLE}
-        subtitle={PAGE_TITLE.USERS.SUB_TITLE}
-        buttonText={PAGE_TITLE.USERS.BUTTON_TEXT}
-        buttonIcon={<Plus size={18} />}
-        onButtonClick={() => {
-          setEditData(null);
-          setOpen(true);
-        }}
-      />
+
+      {/* ❌ REMOVE BUTTON */}
+     <CommonPageHeader
+  title={PAGE_TITLE.USERS.TITLE}
+  subtitle={PAGE_TITLE.USERS.SUB_TITLE}
+/>
 
       <CommonSearchFilterBar
         total={total}
@@ -141,7 +136,7 @@ const User = () => {
           setEditData(item);
           setOpen(true);
         }}
-        onDelete={handleDelete}
+        onDelete={(id: string) => setDeleteId(id)}
         onToggleStatus={handleToggleStatus}
       />
 
@@ -150,8 +145,28 @@ const User = () => {
         limit={pagination.limit}
         total={total}
         currentCount={filteredUsers.length}
-        label={PAGE_TITLE.USERS.LABEL} onPageChange={handlePageChange} onLimitChange={handleLimitChange}  />
-      <UserForm open={open}onClose={() => {setOpen(false); setEditData(null);}} onSubmit={handleSubmit}initialValues={editData}/>
+        label={PAGE_TITLE.USERS.LABEL}
+        onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
+      />
+
+      <ConfirmModal
+  open={!!deleteId}
+  onClose={() => setDeleteId(null)}
+  onConfirm={handleDelete}
+  loading={deleteUser.isPending}
+/>
+
+      {/* ✅ ONLY EDIT FORM */}
+      <UserForm
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setEditData(null);
+        }}
+        onSubmit={handleSubmit}
+        initialValues={editData}
+      />
     </div>
   );
 };

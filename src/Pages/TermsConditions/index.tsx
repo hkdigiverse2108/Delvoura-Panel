@@ -1,147 +1,137 @@
+
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
-import {
-  CommonPageHeader,
-  CommonPagination,
-} from "../../Components";
-import CommonSearchFilterBar from "../../Components/common/CommonSearchFillterBar";
-
+import { useEffect, useState } from "react";
+import { Pencil, Save, X, FileText } from "lucide-react";
+import { CommonEditor } from "../../Components/common/commonForm";
 import { Mutations } from "../../Api/Mutations";
-
-import TermsConditionsTable from "../../Components/TermsConditions/TermsConditionsTable";
-import TermsConditionsFormPage from "../../Components/TermsConditions/TermsConditionsForm";
 import { Queries } from "../../Api/Queries";
 
-const TermsConditionsPage = () => {
-  const [mode, setMode] = useState<"list" | "form">("list");
-  const [editData, setEditData] = useState<any>(null);
+const TermsConditions = () => {
+  const [content, setContent] = useState("");
+  const [savedContent, setSavedContent] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-  });
+  const { data, refetch, error } =
+    Queries.useGetTermsConditions();
 
-  const [filters, setFilters] = useState({ search: "" });
-  const [statusToggle, setStatusToggle] = useState(true);
+  const addEditMutation =
+    Mutations.useAddEditTermsConditions();
+useEffect(() => {
+  const responseArray = data?.data?.terms_conditions_data;
 
-  const queryParams = {
-    page: pagination.page,
-    limit: pagination.limit,
-    search: filters.search,
-    status: statusToggle ? "active" : "inactive",
-  };
-
-  const { data, isLoading, refetch } =
-    Queries.useGetTermsConditions(queryParams);
-
-  const list = data?.data?.terms_conditions_data || [];
-  const total = data?.data?.totalData || 0;
-
-  const add = Mutations.useAddTermsConditions();
-  const update = Mutations.useUpdateTermsConditions();
-  const del = Mutations.useDeleteTermsConditions();
-
-  const handleSubmit = async (values: any) => {
-    if (editData) {
-      await update.mutateAsync({
-        ...values,
-        termsConditionsId: editData._id,
-      });
-    } else {
-      await add.mutateAsync(values);
-    }
-
-    setMode("list");
-    setEditData(null);
-    refetch();
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Delete this item?")) {
-      await del.mutateAsync(id);
-      refetch();
-    }
-  };
-
-  const handleToggle = async (item: any) => {
-    await update.mutateAsync({
-      termsConditionsId: item._id,
-      title: item.title,
-      content: item.content,
-      isActive: !item.isActive,
-    });
-    refetch();
-  };
-
-  // 🔥 FORM VIEW
-  if (mode === "form") {
-    return (
-      <TermsConditionsFormPage
-        initialValues={editData}
-        onSubmit={handleSubmit}
-        onBack={() => {
-          setMode("list");
-          setEditData(null);
-        }}
-      />
-    );
+  if (responseArray && responseArray.length > 0) {
+    setContent(responseArray[0].content);
+    setSavedContent(responseArray[0].content);
+    setIsEditing(false);
   }
+}, [data]);
 
-  // 🔥 LIST VIEW
+  useEffect(() => {
+    if (error) {
+      setContent("");
+      setSavedContent("");
+      setIsEditing(true);
+    }
+  }, [error]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setContent(savedContent);
+  };
+
+  const handleCancel = () => {
+    setContent(savedContent);
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    if (!content.trim()) return;
+
+    await addEditMutation.mutateAsync({
+      content,
+    });
+
+    setSavedContent(content);
+    setIsEditing(false);
+    refetch();
+  };
+
   return (
-    <div>
-      <CommonPageHeader
-        title="Terms & Conditions"
-        subtitle="Manage legal pages"
-        buttonText="Add Terms"
-        buttonIcon={<Plus size={18} />}
-        onButtonClick={() => {
-          setEditData(null);
-          setMode("form");
-        }}
-      />
+    <div className="user-page w-full">
+      <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-gray-100">
+            <FileText size={18} />
+          </div>
 
-      <CommonSearchFilterBar
-        total={total}
-        search={filters.search}
-        onSearchChange={(val) => setFilters({ search: val })}
-        onSearchSubmit={refetch}
-        status={statusToggle}
-        onStatusChange={setStatusToggle}
-        label="Terms"
-      />
+          <div>
+            <h2 className="text-lg font-semibold">
+              Terms & Conditions
+            </h2>
+            <p className="text-sm text-gray-500">
+              Add, preview and edit content
+            </p>
+          </div>
+        </div>
 
-      <TermsConditionsTable
-        data={list}
-        loading={isLoading}
-        page={pagination.page}
-        limit={pagination.limit}
-        onEdit={(item: any) => {
-          setEditData(item);
-          setMode("form");
-        }}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggle}
-      />
+        {/* Editor */}
+        <div className="w-full border border-gray-200 rounded-lg">
+          <CommonEditor
+            label=""
+            value={content}
+            onChange={(val) => {
+              if (isEditing) setContent(val);
+            }}
+            height="500px"
+            readOnly={!isEditing}
+          />
+        </div>
 
-      <CommonPagination
-        page={pagination.page}
-        limit={pagination.limit}
-        total={total}
-        currentCount={list.length}
-        label="Terms"
-        onPageChange={(page) =>
-          setPagination((prev) => ({ ...prev, page }))
-        }
-        onLimitChange={(limit) =>
-          setPagination({ page: 1, limit, total })
-        }
-      />
+        {/* Buttons */}
+        <div className="mt-4 flex justify-end items-center gap-3">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition"
+              >
+                <span className="flex items-center gap-2">
+                  <X size={15} />
+                  Cancel
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={!content.trim()}
+                className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  <Save size={15} />
+                  Save
+                </span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition"
+            >
+              <span className="flex items-center gap-2">
+                <Pencil size={15} />
+                Edit
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default TermsConditionsPage;
+export default TermsConditions;

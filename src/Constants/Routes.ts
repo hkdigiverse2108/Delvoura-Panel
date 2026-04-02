@@ -50,6 +50,8 @@ TERMS_SERVICE: {
   BASE: "/terms-service",
   ADD_EDIT: "/terms-service/add-edit",
 },
+
+
 INSTAGRAM: {
   BASE: "/instagram",
   ADD_EDIT: "/instagram/add-edit",
@@ -74,5 +76,27 @@ RETURN_EXCHANGE: {
   BASE: "/return-exchange",
   ADD_EDIT: "/return-exchange/add-edit",
 },
+
+CONTACT_US: {
+  BASE: "/contact-us",
+},
+
+
+NEWSLETTER: {
+  BASE: "/newsletter",
+},
+
+RATING: {
+  BASE: "/rating",
+  ADD_EDIT: "/rating/add-edit",
+},
+
+SETTINGS: {
+  BASE: "/settings"
+},
+
+ORDERS: "/orders",
+ORDER_DETAILS: "/orders/:id",
+
 
 } as const;

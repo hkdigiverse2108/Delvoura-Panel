@@ -3,6 +3,30 @@ export type ProductVariant = {
   price?: number;
 };
 
+export interface ProductSubmitData {
+  productId?: string;
+  name: string;
+  title: string;
+  mrp: number;
+  gender: string;
+  collectionIds: string[];
+  seasonIds: string[];
+  scentIds: string[];
+  variants: {
+    size: string;
+    price: number;
+    mrp: number;
+  }[];
+  ingredients: string[];
+  description: string;
+  usageTips: string;
+  scentStory: string;
+  metaTitle: string;
+  metaDescription: string;
+  images: string[];
+}
+
+
 export type ProductPayload = {
   name: string;
   title?: string;
@@ -31,14 +55,32 @@ export type UpdateProductPayload = ProductPayload & {
   productId: string;
 };
 
+
+export type Product = ProductPayload & {
+  _id: string;
+};
+
 export type ProductResponse = {
   statusCode: number;
   message: string;
-  data: any;
+  data: Product;
 };
+
+
 
 export type UpdateProductResponse = {
   statusCode: number;
   message: string;
-  data: any;
+  data: Product;
+};
+export type ProductListResponse = ApiResponse<{
+  product_data: Product[];
+  totalData: number;
+}>;
+
+export type ApiResponse<T = unknown> = {
+  status: number;
+  message: string;
+  data: T;
+  error?: unknown;
 };

@@ -1,3 +1,6 @@
+import type { ApiResponse } from "./common";
+
+
 export interface MediaItem {
   url: string;
   name: string;
@@ -10,3 +13,7 @@ export interface UploadModalPayload {
   fieldName?: string;
   maxSelection?: number;
 }
+
+export type MediaListResponse = ApiResponse<MediaItem[]>;
+
+export type MediaSingleResponse = ApiResponse<MediaItem>;

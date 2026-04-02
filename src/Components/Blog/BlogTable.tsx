@@ -51,8 +51,11 @@ const BlogTable = ({
       key: "title",
       render: (item: any) => <span className="font-medium">{item.title}</span>,
     },
-    
-    {
+{
+  title: "Description",
+  key: "description",
+  dataIndex: "description",
+}, {
       title: "Created / Updated",
       key: "createdUpdatedAt",
       width: 280,

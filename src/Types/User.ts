@@ -1,3 +1,6 @@
+import type { ApiResponse } from "./common";
+
+
 export type UserType = {
   _id: string;
   firstName?: string;
@@ -9,6 +12,7 @@ export type UserType = {
   };
   roles?: string;
   isActive?: boolean;
+  
 };
 
 export type UserPayload = {
@@ -22,7 +26,6 @@ export type UserPayload = {
     phoneNo?: number | string;
   };
 };
-export type UserResponse = Record<string, unknown>;
 
 export type UpdateUserPayload = {
     userId : string
@@ -40,3 +43,15 @@ export type UpdateUserPayload = {
 };
 
 export type UpdateUserResponse = Record<string, unknown>;
+
+
+
+export type UserResponse = ApiResponse<UserType>;
+export type UserListResponse = {
+  status: number;
+  message: string;
+  data: {
+    user_data: UserType[];
+    totalData: number;
+  };
+};

@@ -1,143 +1,135 @@
+
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
-import {
-  CommonPageHeader,
-  CommonPagination,
-} from "../../Components";
-import CommonSearchFilterBar from "../../Components/common/CommonSearchFillterBar";
-import { PAGE_TITLE } from "../../Constants";
+import { useEffect, useState } from "react";
+import { Pencil, Save, X, FileText } from "lucide-react";
+import { CommonEditor } from "../../Components/common/commonForm";
 import { Mutations } from "../../Api/Mutations";
-import TermsServiceTable from "../../Components/TermsService/TermsServiceTable";
-import TermsServiceFormPage from "../../Components/TermsService/TermsServiceForm";
 import { Queries } from "../../Api/Queries";
 
 const TermsService = () => {
-  const [mode, setMode] = useState<"list" | "form">("list");
-  const [editData, setEditData] = useState<any>(null);
+  const [content, setContent] = useState("");
+  const [savedContent, setSavedContent] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-  });
+  const { data, refetch, error } = Queries.useGetTermsService();
+  const addEditMutation = Mutations.useAddEditTermsService();
+useEffect(() => {
+  const responseArray = data?.data?.terms_service_data;
 
-  const [search, setSearch] = useState("");
-  const [statusToggle, setStatusToggle] = useState(true);
-
-  const { data, isLoading, refetch } =Queries.useGetTermsService({
-    page: pagination.page,
-    limit: pagination.limit,
-    search,
-    status: statusToggle ? "active" : "inactive",
-  });
-
-  const list = data?.data?.terms_service_data || [];
-  const total = data?.data?.totalData || 0;
-
-  const add = Mutations.useAddTermsService();
-  const update = Mutations.useUpdateTermsService();
-  const remove = Mutations.useDeleteTermsService();
-
-  const handleSubmit = async (values: any) => {
-    if (editData) {
-      await update.mutateAsync({
-        ...values,
-        termsServiceId: editData._id,
-      });
-    } else {
-      await add.mutateAsync(values);
-    }
-
-    setMode("list");
-    setEditData(null);
-    refetch();
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Delete?")) {
-      await remove.mutateAsync(id);
-      refetch();
-    }
-  };
-
-  const handleToggle = async (item: any) => {
-    await update.mutateAsync({
-      termsServiceId: item._id,
-      title: item.title,
-      content: item.content,
-      isActive: !item.isActive,
-    });
-    refetch();
-  };
-
-  const handleAdd = () => {
-    setEditData(null);
-    setMode("form");
-  };
-
-  const handleEdit = (item: any) => {
-    setEditData(item);
-    setMode("form");
-  };
-
-  // Form View
-  if (mode === "form") {
-    return (
-      <TermsServiceFormPage
-        initialValues={editData}
-        onSubmit={handleSubmit}
-        onCancel={() => {
-          setMode("list");
-          setEditData(null);
-        }}
-      />
-    );
+  if (responseArray && responseArray.length > 0) {
+    setContent(responseArray[0].content);
+    setSavedContent(responseArray[0].content);
+    setIsEditing(false);
   }
+}, [data]);
 
-  // List View
+  useEffect(() => {
+    if (error) {
+      setContent("");
+      setSavedContent("");
+      setIsEditing(true);
+    }
+  }, [error]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setContent(savedContent);
+  };
+
+  const handleCancel = () => {
+    setContent(savedContent);
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    if (!content.trim()) return;
+
+    await addEditMutation.mutateAsync({
+      content,
+    });
+
+    setSavedContent(content);
+    setIsEditing(false);
+    refetch();
+  };
+
+
   return (
-    <div className="user-page">
-      <CommonPageHeader
-        title={PAGE_TITLE.TERMS_SERVICE.TITLE}
-        subtitle={PAGE_TITLE.TERMS_SERVICE.SUB_TITLE}
-        buttonText={PAGE_TITLE.TERMS_SERVICE.BUTTON_TEXT}
-        buttonIcon={<Plus size={18} />}
-        onButtonClick={handleAdd}
-      />
+    <div className="user-page w-full">
+      
 
-      <CommonSearchFilterBar
-        total={total}
-        label="terms"
-        search={search}
-        onSearchChange={setSearch}
-        onSearchSubmit={refetch}
-        status={statusToggle}
-        onStatusChange={(val) => {
-          setStatusToggle(val);
-          setPagination((p) => ({ ...p, page: 1 }));
-        }}
-      />
+      <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-gray-100">
+            <FileText size={18} />
+          </div>
 
-      <TermsServiceTable
-        data={list}
-        loading={isLoading}
-        page={pagination.page}
-        limit={pagination.limit}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggle}
-      />
+          <div>
+            <h2 className="text-lg font-semibold">
+              Terms of Service
+            </h2>
+            <p className="text-sm text-gray-500">
+              Add, preview and edit content
+            </p>
+          </div>
+        </div>
 
-      <CommonPagination
-        page={pagination.page}
-        limit={pagination.limit}
-        total={total}
-        currentCount={list.length}
-        label="terms"
-        onPageChange={(page) => setPagination((p) => ({ ...p, page }))}
-        onLimitChange={(limit) => setPagination({ page: 1, limit })}
-      />
+        <div className="w-full border border-gray-200 rounded-lg">
+          <CommonEditor
+            label=""
+            value={content}
+            onChange={(val) => {
+              if (isEditing) setContent(val);
+            }}
+            height="500px"
+            readOnly={!isEditing}
+          />
+        </div>
+
+        {/* Buttons visible */}
+        <div className="mt-4 flex justify-end items-center gap-3">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition"
+              >
+                <span className="flex items-center gap-2">
+                  <X size={15} />
+                  Cancel
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={!content.trim()}
+                className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  <Save size={15} />
+                  Save
+                </span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition"
+            >
+              <span className="flex items-center gap-2">
+                <Pencil size={15} />
+                Edit
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

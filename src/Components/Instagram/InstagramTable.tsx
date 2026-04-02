@@ -21,9 +21,33 @@ const InstagramTable = ({
     {
       title: "Image",
       key: "image",
-      render: (item: any) => (
-        <img src={item.imageUrl} className="w-16 h-16 rounded object-cover" />
-      ),
+   render: (item: any) => {
+  const type = item.type?.toLowerCase();
+  const imgUrl = item.imageUrl?.startsWith("http")
+    ? item.imageUrl
+    : `https://yourbackend.com${item.imageUrl}`; // apna backend URL daalo
+
+  const videoUrl = item.videoUrl?.startsWith("http")
+    ? item.videoUrl
+    : `https://yourbackend.com${item.videoUrl}`; // apna backend URL daalo
+
+  if (type === "img") {
+    return (
+      <img
+        src={imgUrl}
+        className="w-16 h-16 rounded object-cover"
+        onError={(e: any) => {
+          e.target.src = "https://via.placeholder.com/80";
+        }}
+      />
+    );
+  } else if (type === "video") {
+    return (
+      <video src={videoUrl} className="w-16 h-16 rounded object-cover" />
+    );
+  }
+  return "-";
+}
     },
     {
       title: "Link",

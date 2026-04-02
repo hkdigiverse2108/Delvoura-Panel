@@ -86,9 +86,8 @@ BANNER : {
 
 TERMS_SERVICE: {
   TITLE: "Terms of Service",
-  SUB_TITLE: "Manage terms and conditions content",
-  BUTTON_TEXT: "Add Terms",
-  LABEL: "Terms",
+  SUB_TITLE: "Add, preview and edit terms content",
+  LABEL: "Terms Service",
 },
 TERMS_CONDITION: {
   TITLE: "Terms of condition",
@@ -102,39 +101,53 @@ INSTAGRAM: {
   BUTTON_TEXT: "Add instagram",
   LABEL: "Instagram",
 },
-
 PRIVACY_POLICY: {
-  BASE: "Privacy Policy",
-  LIST: "Privacy Policy List",
-  ADD: "Add Privacy Policy",
-  EDIT: "Edit Privacy Policy",
   TITLE: "Privacy Policy",
-  SUB_TITLE: "Manage your privacy policy content",
-  BUTTON_TEXT: "Add Privacy Policy",
-  LABEL: "Policies",
+  SUB_TITLE: "Manage privacy policy content",
+  LABEL: "Privacy Policy",
 },
 
 REFUND_POLICY: {
-  BASE: "Refund Policy",
-  LIST: "Refund Policy List",
-  ADD: "Add Refund Policy",
-  EDIT: "Edit Refund Policy",
   TITLE: "Refund Policy",
-  SUB_TITLE: "Manage your refund policies",
-  BUTTON_TEXT: "Add Refund Policy",
+  SUB_TITLE: "Manage refund policy content",
   LABEL: "Refund Policy",
 },
 
 RETURN_EXCHANGE: {
-  BASE: "Return Exchange",
-  LIST: "Return Exchange List",
-  ADD: "Add Return Exchange",
-  EDIT: "Edit Return Exchange",
-  TITLE: "Return Exchange",
-  SUB_TITLE: "Manage return & exchange FAQs",
-  BUTTON_TEXT: "Add Return Exchange",
+  TITLE: "Return & Exchange",
+  SUB_TITLE: "Manage return and exchange content",
   LABEL: "Return Exchange",
 },
 
 
+CONTACT_US: {
+  LABEL: "Contact Us",
+  TITLE: "Contact Messages",
+  SUB_TITLE: "View and manage user contact messages",
+  BUTTON_TEXT: "",
+  BASE: "Contact Us",
+  LIST: "Contact Messages List",
+},
+
+NEWSLETTER: {
+  LABEL: "Newsletter",
+  TITLE: "Newsletter Subscribers",
+  SUB_TITLE: "Manage newsletter subscribers",
+  BASE: "Newsletter",
+  LIST: "Newsletter List",
+},
+
+RATING: {
+  LABEL: "Rating",
+  TITLE: "Product Ratings",
+  SUB_TITLE: "Manage product reviews and ratings",
+  BUTTON_TEXT: "Add Rating",
+  BASE: "Rating",
+  LIST: "Rating List",
+  ADD: "Add Rating",
+  EDIT: "Edit Rating",
+},
+
+ORDERS: "Orders",
+ORDER_DETAILS: "Order Details",
 } as const;

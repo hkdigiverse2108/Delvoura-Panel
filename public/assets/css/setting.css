@@ -1,0 +1,152 @@
+/* setting.css */
+
+:root {
+  /* Primary Color */
+  --primary: #BCAE93;
+  --primary-10: rgba(188, 174, 147, 0.1);
+  --primary-15: rgba(188, 174, 147, 0.15);
+  --primary-20: rgba(188, 174, 147, 0.2);
+  --primary-30: rgba(188, 174, 147, 0.3);
+  --primary-50: rgba(188, 174, 147, 0.5);
+  --primary-80: rgba(188, 174, 147, 0.8);
+  
+  /* Neutral Colors */
+  --black: #1a1a1a;
+  --white: #ffffff;
+  --gray-light: #f8f9fa;
+  --gray-medium: #e9ecef;
+  --gray-dark: #6c757d;
+  
+  /* Status Colors */
+  --red: #ef4444;
+  --red-light: #fee2e2;
+  --green: #22c55e;
+  --green-light: #dcfce7;
+}
+
+/* Custom toggle switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gray-medium);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--primary-dark);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--gray-light);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-30);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Hover animations */
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Section card styles */
+.section-card {
+  transition: box-shadow 0.2s ease;
+  border-radius: 8px;
+}
+
+.section-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Animation for save button */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.save-button:active {
+  animation: pulse 0.3s ease;
+}
+
+/* Input styling */
+.input-custom {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.input-custom:focus {
+  outline: none;
+  ring: 2px solid var(--primary-30);
+  border-color: transparent;
+}
+
+/* Button styling */
+.btn-primary-custom {
+  background-color: var(--primary-dark);
+  color: white;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-custom:hover {
+  background-color: var(--primary-80);
+  transform: scale(1.02);
+}

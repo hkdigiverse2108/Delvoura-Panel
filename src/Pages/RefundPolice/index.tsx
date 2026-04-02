@@ -1,136 +1,129 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Pencil, Save, X, FileText } from "lucide-react";
+import { CommonEditor } from "../../Components/common/commonForm";
 import { Mutations } from "../../Api/Mutations";
 import { Queries } from "../../Api/Queries";
-import {
-  CommonPageHeader,
-  CommonPagination,
-} from "../../Components";
-import CommonSearchFilterBar from "../../Components/common/CommonSearchFillterBar";
-
-import { PAGE_TITLE } from "../../Constants";
-import RefundPolicyForm from "../../Components/RefundPolice/RefundPoliceForm";
-import RefundPolicyTable from "../../Components/RefundPolice/RefundPoliceTable";
 
 const RefundPolicy = () => {
-  const [mode, setMode] = useState<"list" | "form">("list");
-  const [editData, setEditData] = useState<any>(null);
+  const [content, setContent] = useState("");
+  const [savedContent, setSavedContent] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-  });
+  const { data, refetch, error } = Queries.useGetRefundPolicy();
+  const addEditMutation = Mutations.useAddEditRefundPolicy();
 
-  const [filters, setFilters] = useState({ search: "" });
-  const [statusToggle, setStatusToggle] = useState(true);
-
-  const params = {
-    page: pagination.page,
-    limit: pagination.limit,
-    ...(filters.search && { search: filters.search }),
-    status: statusToggle ? "active" : "inactive",
-  };
-
-  const { data, isLoading, refetch } =
-    Queries.useGetRefundPolicies(params);
-
-  const list = data?.data?.refund_policy_data || [];
-  const total = data?.data?.totalData || 0;
-
-  const add = Mutations.useAddRefundPolicy();
-  const update = Mutations.useUpdateRefundPolicy();
-  const remove = Mutations.useDeleteRefundPolicy();
-
-  const handleSubmit = async (values: any) => {
-    if (editData) {
-      await update.mutateAsync({
-        ...values,
-        refundPolicyId: editData._id,
-      });
-    } else {
-      await add.mutateAsync(values);
+  useEffect(() => {
+    const responseArray = data?.data?.refund_policy_data;
+    if (responseArray && responseArray.length > 0) {
+      setContent(responseArray[0].content);
+      setSavedContent(responseArray[0].content);
+      setIsEditing(false);
     }
+  }, [data]);
 
-    setMode("list");
-    setEditData(null);
-    refetch();
+  useEffect(() => {
+    if (error) {
+      setContent("");
+      setSavedContent("");
+      setIsEditing(true);
+    }
+  }, [error]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setContent(savedContent);
   };
 
-  const handleDelete = async (id: string) => {
-    await remove.mutateAsync(id);
-    refetch();
+  const handleCancel = () => {
+    setContent(savedContent);
+    setIsEditing(false);
   };
 
-  const handleToggle = async (item: any) => {
-    await update.mutateAsync({
-      refundPolicyId: item._id,
-      title: item.title,
-      content: item.content,
-      isActive: !item.isActive,
-    });
+  const handleSave = async () => {
+    if (!content.trim()) return;
+    await addEditMutation.mutateAsync({ content });
+    setSavedContent(content);
+    setIsEditing(false);
     refetch();
   };
-
-  if (mode === "form") {
-    return (
-      <RefundPolicyForm
-        initialValues={editData}
-        onSubmit={handleSubmit}
-        onBack={() => {
-          setMode("list");
-          setEditData(null);
-        }}
-      />
-    );
-  }
 
   return (
-    <div>
-      <CommonPageHeader
-        title={PAGE_TITLE.REFUND_POLICY.TITLE}
-        buttonText={PAGE_TITLE.REFUND_POLICY.BUTTON_TEXT}
-        buttonIcon={<Plus />}
-        onButtonClick={() => setMode("form")}
-      />
+    <div className="user-page w-full">
+      <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5 relative">
+        {/* NEW Badge */}
+        <div className="absolute -top-3 -right-3 z-10">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75"></div>
+            <div className="relative px-3 py-1 text-xs font-bold text-white rounded-full shadow-lg" style={{ background: "linear-gradient(135deg, var(--primary), #ff4d4f)", boxShadow: "0 0 15px var(--primary)" }}>
+              NEW
+            </div>
+          </div>
+        </div>
 
-      <CommonSearchFilterBar
-        total={total}
-        label="Refund Policies"
-        search={filters.search}
-        onSearchChange={(val) => setFilters({ search: val })}
-        onSearchSubmit={refetch}
-        status={statusToggle}
-        onStatusChange={setStatusToggle}
-      />
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-gray-100">
+            <FileText size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Refund Policy</h2>
+            <p className="text-sm text-gray-500">Add, preview and edit content</p>
+          </div>
+        </div>
 
-      <RefundPolicyTable
-        data={list}
-        loading={isLoading}
-        page={pagination.page}
-        limit={pagination.limit}
-        onEdit={(item: any) => {
-          setEditData(item);
-          setMode("form");
-        }}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggle}
-      />
+        {/* Editor */}
+        <div className="w-full border border-gray-200 rounded-lg">
+          <CommonEditor
+            label=""
+            value={content}
+            onChange={(val) => { if (isEditing) setContent(val); }}
+            height="500px"
+            readOnly={!isEditing}
+          />
+        </div>
 
-      <CommonPagination
-        page={pagination.page}
-        limit={pagination.limit}
-        total={total}
-        currentCount={list.length}
-        onPageChange={(page) =>
-          setPagination((p) => ({ ...p, page }))
-        }
-        onLimitChange={(limit) =>
-          setPagination({ page: 1, limit, total })
-        }
-      />
+        {/* Buttons */}
+        <div className="mt-4 flex justify-end items-center gap-3">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition"
+              >
+                <span className="flex items-center gap-2">
+                  <X size={15} />
+                  Cancel
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={!content.trim()}
+                className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  <Save size={15} />
+                  Save
+                </span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition"
+            >
+              <span className="flex items-center gap-2">
+                <Pencil size={15} />
+                Edit
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

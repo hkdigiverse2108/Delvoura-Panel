@@ -4,18 +4,16 @@ import { useMemo, useState } from "react";
 import { DatePicker, Select } from "antd";
 import { Plus } from "lucide-react";
 import dayjs from "dayjs";
-import { Mutations } from "../../Api/Mutations";
 
-import {
-  CommonFilterPanel,
-  CommonPageHeader,
-  CommonPagination,
-  ProductTable,
-} from "../../Components";
+import { Mutations } from "../../Api/Mutations";
+import { CommonFilterPanel, CommonPageHeader, CommonPagination, ProductTable } from "../../Components";
 import CommonSearchFilterBar from "../../Components/common/CommonSearchFillterBar";
-import { PAGE_TITLE } from "../../Constants";
+import ConfirmModal from "../../Components/common/ConfirmModal";
 import ProductFormPage from "../../Components/Products/ProductForm";
 import { Queries } from "../../Api/Queries";
+import { PAGE_TITLE } from "../../Constants";
+
+import type { Collection, Scent, Season, SelectOption } from "../../Types";
 
 const { RangePicker } = DatePicker;
 
@@ -23,25 +21,21 @@ const Product = () => {
   const [mode, setMode] = useState<"list" | "form">("list");
   const [editData, setEditData] = useState<any>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-  });
-
-  // STATUS TOGGLE
+  const [pagination, setPagination] = useState({ page: 1, limit: 10 });
   const [statusToggle, setStatusToggle] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<any>({
     search: "",
     genderFilter: "",
     TrendingFilter: undefined,
+    FeaturedFilter: undefined,
     collectionFilter: [],
     seasonFilter: [],
     scentFilter: [],
     startDateFilter: "",
     endDateFilter: "",
-    dateRange: null,
+    dateRange: null
   });
 
   const [appliedFilters, setAppliedFilters] = useState<any>({
@@ -51,39 +45,8 @@ const Product = () => {
     seasonFilter: [],
     scentFilter: [],
     startDateFilter: "",
-    endDateFilter: "",
+    endDateFilter: ""
   });
-
-  const getProductPayload = (item: any) => {
-    return {
-      productId: item._id,
-      name: item.name,
-      title: item.title || "",
-      mrp: item.mrp || 0,
-      gender: item.gender || "unisex",
-      collectionIds: (item.collectionIds || []).map((v: any) => v._id || v),
-      seasonIds: (item.seasonIds || []).map((v: any) => v._id || v),
-      scentIds: (item.scentIds || []).map((v: any) => v._id || v),
-      variants: (item.variants || [])
-        .map((v: any) => ({
-          size: typeof v === "string" ? v : v.size,
-          price: typeof v === "object" ? v.price || 0 : 0,
-        }))
-        .filter((v: any) => v.size),
-      ingredients: item.ingredients || [],
-      description: item.description || "",
-      usageTips: item.usageTips || "",
-      scentStory: item.scentStory || "",
-      metaTitle: item.metaTitle || "",
-      metaDescription: item.metaDescription || "",
-      metaKeywords: item.metaKeywords || [],
-      slug: item.slug || "",
-      brandManufacturerInfo: item.brandManufacturerInfo || "",
-      isTrending: item.isTrending || false,
-      coverimage: item.coverimage || "",
-      images: item.images || [],
-    };
-  };
 
   const queryParams = {
     page: pagination.page,
@@ -92,49 +55,78 @@ const Product = () => {
     status: statusToggle ? "active" : "inactive",
     ...(appliedFilters.genderFilter && { genderFilter: appliedFilters.genderFilter }),
     ...(typeof appliedFilters.TrendingFilter !== "undefined" && { TrendingFilter: appliedFilters.TrendingFilter }),
-    ...(appliedFilters.collectionFilter?.length && { collectionFilter: appliedFilters.collectionFilter }),
-    ...(appliedFilters.seasonFilter?.length && { seasonFilter: appliedFilters.seasonFilter }),
-    ...(appliedFilters.scentFilter?.length && { scentFilter: appliedFilters.scentFilter }),
+    ...(typeof appliedFilters.FeaturedFilter !== "undefined" && { FeaturedFilter: appliedFilters.FeaturedFilter }),
+    ...(appliedFilters.collectionFilter?.length && { collectionFilter: appliedFilters.collectionFilter.join(",") }),
+    ...(appliedFilters.seasonFilter?.length && { seasonFilter: appliedFilters.seasonFilter.join(",") }),
+    ...(appliedFilters.scentFilter?.length && { scentFilter: appliedFilters.scentFilter.join(",") }),
     ...(appliedFilters.startDateFilter && { startDateFilter: appliedFilters.startDateFilter }),
-    ...(appliedFilters.endDateFilter && { endDateFilter: appliedFilters.endDateFilter }),
+    ...(appliedFilters.endDateFilter && { endDateFilter: appliedFilters.endDateFilter })
   };
 
   const { data, isLoading, refetch } = Queries.useGetProducts(queryParams);
-
-  const { data: collectionData } = Queries.useGetCollections({ page: 1, limit: 1000 });
-  const { data: seasonData } = Queries.useGetSeasons({ page: 1, limit: 1000 });
-  const { data: scentData } = Queries.useGetScents({ page: 1, limit: 1000 });
+  const { data: collectionData } = Queries.useGetCollections();
+  const { data: seasonData } = Queries.useGetSeasons();
+  const { data: scentData } = Queries.useGetScents();
 
   const products = data?.data?.product_data || [];
   const total = data?.data?.totalData || 0;
-
   const filteredProducts = useMemo(() => products, [products]);
 
   const addProduct = Mutations.useAddProduct();
   const updateProduct = Mutations.useUpdateProduct();
   const deleteProduct = Mutations.useDeleteProduct();
 
-  // ================= OPTIONS =================
+  const collectionOptions: SelectOption[] = collectionData?.data?.collection_data?.map((item: Collection) => ({
+    label: item.name,
+    value: item._id
+  })) ?? [];
 
-  const collectionOptions =
-    collectionData?.data?.collection_data?.map((item: any) => ({
+  const seasonOptions = useMemo(() =>
+    (seasonData?.data?.season_data ?? []).map((item: Season) => ({
       label: item.name,
-      value: item._id,
-    })) || [];
+      value: item._id
+    })),
+    [seasonData]
+  );
 
-  const seasonOptions =
-    seasonData?.data?.season_data?.map((item: any) => ({
+  const scentOptions = useMemo(() =>
+    (scentData?.data?.scent_data ?? []).map((item: Scent) => ({
       label: item.name,
-      value: item._id,
-    })) || [];
+      value: item._id
+    })),
+    [scentData]
+  );
 
-  const scentOptions =
-    scentData?.data?.scent_data?.map((item: any) => ({
-      label: item.name,
-      value: item._id,
-    })) || [];
+  const getProductPayload = (item: any) => ({
+    productId: item._id,
+    name: item.name,
+    title: item.title || "",
+    mrp: item.mrp || 0,
+    gender: item.gender || "unisex",
+    collectionIds: (item.collectionIds || []).map((v: any) => v._id || v),
+    seasonIds: (item.seasonIds || []).map((v: any) => v._id || v),
+    scentIds: (item.scentIds || []).map((v: any) => v._id || v),
+    variants: (item.variants || [])
+      .map((v: any) => ({
+        size: typeof v === "string" ? v : v.size,
+        price: typeof v === "object" ? v.price || 0 : 0,
+      }))
+      .filter((v: any) => v.size),
+    ingredients: item.ingredients || [],
+    description: item.description || "",
+    usageTips: item.usageTips || "",
+    scentStory: item.scentStory || "",
+    metaTitle: item.metaTitle || "",
+    metaDescription: item.metaDescription || "",
+    metaKeywords: item.metaKeywords || [],
+    slug: item.slug || "",
+    brandManufacturerInfo: item.brandManufacturerInfo || "",
+    isTrending: item.isTrending || false,
+    coverimage: item.coverimage || "",
+    images: item.images || []
+  });
 
-  // ================= HANDLERS =================
+  // =========================== HANDLERS ===========================
   const handleSubmit = async (values: any) => {
     try {
       const payload = {
@@ -152,32 +144,29 @@ const Product = () => {
         collectionIds: (values.collectionIds || []).map((v: any) => v._id || v),
         seasonIds: (values.seasonIds || []).map((v: any) => v._id || v),
         scentIds: (values.scentIds || []).map((v: any) => v._id || v),
-        images: (values.images || []).filter((img: string) => img),
+        images: Array.isArray(values.images) ? values.images.filter((img: string) => img) : [],
         isTrending: !!values.isTrending,
+        isFeatured: !!values.isFeatured
       };
 
       payload.images = payload.images.filter((img: string) => img);
 
       if (!payload.coverimage) {
-        console.error(" Cover image missing");
+        console.error("Cover image missing");
         return;
       }
 
       if (!payload.variants.length) {
-        console.error(" Variants required");
+        console.error("Variants required");
         return;
       }
 
       if (editData) {
-        await updateProduct.mutateAsync({
-          ...payload,
-          productId: editData._id,
-        });
+        await updateProduct.mutateAsync({ ...payload, productId: editData._id });
       } else {
         await addProduct.mutateAsync(payload);
       }
 
-      // Switch back to list view
       setMode("list");
       setEditData(null);
       refetch();
@@ -186,20 +175,21 @@ const Product = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Delete this product?")) {
-      await deleteProduct.mutateAsync(id);
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteProduct.mutateAsync(deleteId);
+      setDeleteId(null);
       refetch();
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const handleToggleStatus = async (item: any) => {
     try {
       const payload = getProductPayload(item);
-      await updateProduct.mutateAsync({
-        ...payload,
-        isActive: !item.isActive,
-      });
+      await updateProduct.mutateAsync({ ...payload, isActive: !item.isActive });
       refetch();
     } catch (error) {
       console.error("Status toggle error:", error);
@@ -211,17 +201,16 @@ const Product = () => {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  // ================= FILTER =================
-
   const applyFilters = () => {
     setAppliedFilters({
       genderFilter: filters.genderFilter,
       TrendingFilter: filters.TrendingFilter,
+      FeaturedFilter: filters.FeaturedFilter,
       collectionFilter: filters.collectionFilter,
       seasonFilter: filters.seasonFilter,
       scentFilter: filters.scentFilter,
       startDateFilter: filters.startDateFilter,
-      endDateFilter: filters.endDateFilter,
+      endDateFilter: filters.endDateFilter
     });
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
@@ -236,7 +225,7 @@ const Product = () => {
       scentFilter: [],
       startDateFilter: "",
       endDateFilter: "",
-      dateRange: null,
+      dateRange: null
     });
     setAppliedFilters({});
   };
@@ -289,18 +278,16 @@ const Product = () => {
             <label>Gender</label>
             <Select
               value={filters.genderFilter || undefined}
-              onChange={(value) =>
-                setFilters((prev: any) => ({
-                  ...prev,
-                  genderFilter: value || "",
-                }))
+              onChange={(value: string | undefined) =>
+                setFilters((prev: any) => ({ ...prev, genderFilter: value || "" }))
               }
               allowClear
               size="large"
+              placeholder="Select Gender"
               options={[
-                { label: "men", value: "men" },
-                { label: "women", value: "women" },
-                { label: "unisex", value: "unisex" },
+                { label: "Men", value: "men" },
+                { label: "Women", value: "women" },
+                { label: "Unisex", value: "unisex" }
               ]}
             />
           </div>
@@ -308,22 +295,33 @@ const Product = () => {
           <div className="product-filter-field">
             <label>Trending</label>
             <Select
-              value={
-                typeof filters.TrendingFilter === "undefined"
-                  ? undefined
-                  : filters.TrendingFilter
-              }
-              onChange={(value) =>
-                setFilters((prev: any) => ({
-                  ...prev,
-                  TrendingFilter: value,
-                }))
+              value={typeof filters.TrendingFilter === "undefined" ? undefined : filters.TrendingFilter}
+              onChange={(value: boolean | undefined) =>
+                setFilters((prev: any) => ({ ...prev, TrendingFilter: value }))
               }
               allowClear
               size="large"
+              placeholder="Select Type"
               options={[
                 { label: "Trending", value: true },
-                { label: "Normal", value: false },
+                { label: "Normal", value: false }
+              ]}
+            />
+          </div>
+
+          <div className="product-filter-field">
+            <label>Featured</label>
+            <Select
+              value={typeof filters.FeaturedFilter === "undefined" ? undefined : filters.FeaturedFilter}
+              onChange={(value: boolean | undefined) =>
+                setFilters((prev: any) => ({ ...prev, FeaturedFilter: value }))
+              }
+              allowClear
+              size="large"
+              placeholder="Select Type"
+              options={[
+                { label: "Featured", value: true },
+                { label: "Normal", value: false }
               ]}
             />
           </div>
@@ -332,14 +330,12 @@ const Product = () => {
             <label>Collection</label>
             <Select
               mode="multiple"
-              value={filters.collectionFilter}
-              onChange={(value) =>
-                setFilters((prev: any) => ({
-                  ...prev,
-                  collectionFilter: value,
-                }))
+              value={filters.collectionFilter || []}
+              onChange={(value: string[]) =>
+                setFilters((prev: any) => ({ ...prev, collectionFilter: value }))
               }
               size="large"
+              placeholder="Select Collection"
               options={collectionOptions}
             />
           </div>
@@ -348,14 +344,12 @@ const Product = () => {
             <label>Season</label>
             <Select
               mode="multiple"
-              value={filters.seasonFilter}
-              onChange={(value) =>
-                setFilters((prev: any) => ({
-                  ...prev,
-                  seasonFilter: value,
-                }))
+              value={filters.seasonFilter || []}
+              onChange={(value: string[]) =>
+                setFilters((prev: any) => ({ ...prev, seasonFilter: value }))
               }
               size="large"
+              placeholder="Select Season"
               options={seasonOptions}
             />
           </div>
@@ -364,14 +358,12 @@ const Product = () => {
             <label>Scent</label>
             <Select
               mode="multiple"
-              value={filters.scentFilter}
-              onChange={(value) =>
-                setFilters((prev: any) => ({
-                  ...prev,
-                  scentFilter: value,
-                }))
+              value={filters.scentFilter || []}
+              onChange={(value: string[]) =>
+                setFilters((prev: any) => ({ ...prev, scentFilter: value }))
               }
               size="large"
+              placeholder="Select Scent"
               options={scentOptions}
             />
           </div>
@@ -381,17 +373,16 @@ const Product = () => {
             <RangePicker
               showTime
               size="large"
-              value={filters.dateRange}
+              style={{ width: "100%" }}
+              value={filters.dateRange || null}
+              format="DD MMM YYYY, hh:mm A"
+              placeholder={["Start Date", "End Date"]}
               onChange={(dates) => {
                 setFilters((prev: any) => ({
                   ...prev,
-                  dateRange: dates,
-                  startDateFilter: dates?.[0]
-                    ? dayjs(dates[0]).toISOString()
-                    : "",
-                  endDateFilter: dates?.[1]
-                    ? dayjs(dates[1]).toISOString()
-                    : "",
+                  dateRange: dates || null,
+                  startDateFilter: dates?.[0] ? dayjs(dates[0]).toISOString() : "",
+                  endDateFilter: dates?.[1] ? dayjs(dates[1]).toISOString() : ""
                 }));
               }}
             />
@@ -432,6 +423,13 @@ const Product = () => {
         }}
         onDelete={handleDelete}
         onToggleStatus={handleToggleStatus}
+      />
+
+      <ConfirmModal
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        loading={deleteProduct.isPending}
       />
 
       <CommonPagination

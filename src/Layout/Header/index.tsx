@@ -112,16 +112,17 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
           </button>
         </Badge>
 
-        <Dropdown
-          menu={{
-            items: userMenuItems,
-            onClick: ({ key }) => {
-              if (key === "logout") handleLogout();
-            },
-          }}
-          placement="bottomRight"
-          trigger={["click"]}
-        >
+    <Dropdown
+  menu={{
+    items: userMenuItems,
+    onClick: ({ key }) => {
+      if (key === "logout") handleLogout();
+    },
+  }}
+  placement="bottomRight"
+  trigger={["click"]}
+  getPopupContainer={(triggerNode) => triggerNode.parentElement!}
+> 
           <Space className="profile-trigger">
             <Avatar className="profile-avatar" icon={<UserOutlined />} />
             <div className="profile-info">
