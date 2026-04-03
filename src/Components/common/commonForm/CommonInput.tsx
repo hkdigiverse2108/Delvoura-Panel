@@ -37,7 +37,7 @@ const CommonInput = ({
         size="large"
         prefix={prefix}
         status={error ? "error" : ""}
-        className="rounded-lg border-gray-200   h-12 text-base"
+        className="rounded-lg    h-12 text-base"
       />
 
       {error && (

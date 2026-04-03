@@ -9,11 +9,13 @@ interface Props {
   setImages: (images: string[]) => void;
 }
 
-const ExtraImagesGallery = ({ images, setImages }: Props) => {
+export const ExtraImagesGallery = ({ images, setImages }: Props) => {
   const [open, setOpen] = useState(false);
 
+  const validImages = images.filter((img) => img && img.trim() !== "");
+
   const removeImage = (index: number) => {
-    const updated = images.filter((_, i) => i !== index);
+    const updated = validImages.filter((_, i) => i !== index);
     setImages(updated);
   };
 
@@ -22,8 +24,9 @@ const ExtraImagesGallery = ({ images, setImages }: Props) => {
       <label className="block text-sm font-semibold text-gray-700 mb-2">
         Extra Images
       </label>
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {images.map((img, index) => (
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {validImages.map((img, index) => (
           <div
             key={index}
             className="relative h-24 rounded-lg overflow-hidden border"
@@ -54,15 +57,13 @@ const ExtraImagesGallery = ({ images, setImages }: Props) => {
       <CommonUploadModal
         open={open}
         multiple
-        selected={images}
+        selected={validImages}
         onClose={() => setOpen(false)}
         onSave={(urls) => {
-          setImages(urls);
+          setImages(urls.filter((img) => img && img.trim() !== ""));
           setOpen(false);
         }}
       />
     </div>
   );
 };
-
-export default ExtraImagesGallery;

@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button, Input, InputNumber, Select } from "antd";
-import { Flame, Package, Plus, Trash2, Eye, Edit, ShoppingBag, X, Star, Minus, Plus as PlusIcon, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Flame, Package, Plus, Trash2, Eye, Edit, ShoppingBag, X, Star, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { CommonEditor, CommonFormActions, CommonImageUpload, CommonInput } from "../common/commonForm";
-import ExtraImagesGallery from "../common/commonForm/ExtraImagesGallery";
 import { Queries } from "../../Api/Queries";
-import type { Collection,  Scent, Season } from "../../Types";
+import type { Collection, Scent, Season } from "../../Types";
+import { ExtraImagesGallery } from "../common/commonForm/ExtraImagesGallery";
 
 interface ProductFormProps {
   initialValues?: any;
@@ -14,19 +14,303 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-
-
 const genderOptions = [
   { label: "Men", value: "men" },
   { label: "Women", value: "women" },
   { label: "Unisex", value: "unisex" },
 ];
 
+const ProductPreview = ({ form }: { form: any }) => {
+  const images = [
+    form.coverimage,
+    ...(form.images?.filter((img: string) => img) || [])
+  ].filter(Boolean);
+
+  const [activeImage, setActiveImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+
+  useEffect(() => {
+    const validVariants = form.variants?.filter((v: any) => v.size.trim()) || [];
+    if (validVariants.length > 0 && !selectedVariant) {
+      setSelectedVariant(validVariants[0]);
+    }
+  }, [form.variants, selectedVariant]);
+
+  const getFirstCollectionName = () => {
+    // This would need collection data passed down or use context
+    // For now, we'll just show a placeholder
+    return "";
+  };
+
+  const firstCollection = getFirstCollectionName();
+  const lowestPrice = form.variants?.filter((v: any) => v.price).length > 0
+    ? Math.min(...form.variants.filter((v: any) => v.price).map((v: any) => v.price))
+    : null;
+
+
+    const decodeHtml = (html: string) => {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+};
+  return (
+    <div className="max-w-md mx-auto bg-white">
+      {/* IMAGE */}
+      <div className="relative rounded-2xl overflow-hidden">
+        {images[activeImage] ? (
+          <img
+            src={images[activeImage]}
+            className="w-full aspect-square object-cover"
+            onError={(e) => {
+              e.currentTarget.src = "https://placehold.co/600x600?text=No+Image";
+            }}
+          />
+        ) : (
+          <div className="w-full aspect-square bg-gray-100 flex items-center justify-center">
+            <Package size={48} className="text-gray-300" />
+          </div>
+        )}
+
+        {/* arrows - only show if multiple images */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={() => setActiveImage(p => p === 0 ? images.length - 1 : p - 1)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition-all"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={() => setActiveImage(p => (p + 1) % images.length)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition-all"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </>
+        )}
+
+        {/* gender */}
+        <span className="absolute top-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+          {form.gender?.toUpperCase() || "UNISEX"}
+        </span>
+
+        {/* trending/featured badges */}
+        <div className="absolute top-3 right-3 flex gap-1">
+          {form.isTrending && (
+            <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">🔥</span>
+          )}
+          {form.isFeatured && (
+            <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">⭐</span>
+          )}
+        </div>
+      </div>
+
+      {/* thumbnails */}
+      {images.length > 1 && (
+        <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+          {images.map((img, i) => (
+            <img
+              key={i}
+              src={img}
+              onClick={() => setActiveImage(i)}
+              className={`w-16 h-16 rounded-lg object-cover cursor-pointer border-2 transition-all
+                ${activeImage === i ? 'border-orange-500' : 'border-gray-200 hover:border-gray-300'}`}
+              onError={(e) => {
+                e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* PRODUCT INFO */}
+      <div className="mt-4 space-y-3">
+        {/* Brand/Collection Name */}
+        {firstCollection && (
+          <div className="flex items-center gap-0.5">
+            <span className="text-base font-bold tracking-tight text-gray-800">{firstCollection}</span>
+            <span className="text-[10px] align-top text-gray-400">™</span>
+          </div>
+        )}
+
+        <h1 className="text-2xl font-bold text-gray-900">
+          {form.name || "Product Name"}
+        </h1>
+
+        {form.title && (
+          <p className="text-gray-500 text-sm italic">
+            {form.title}
+          </p>
+        )}
+
+        {/* rating - placeholder */}
+        <div className="flex items-center gap-1 text-gray-400">
+          <div className="flex">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star key={star} size={14} fill="currentColor" className="text-yellow-400" />
+            ))}
+          </div>
+          <span className="text-xs text-gray-400">(0 reviews)</span>
+        </div>
+
+        {/* ingredients/chips */}
+        {form.ingredients?.some((i: string) => i.trim()) && (
+          <div className="text-sm text-orange-600 font-medium flex flex-wrap gap-2">
+            {form.ingredients.filter((i: string) => i.trim()).slice(0, 4).map((i: string, idx: number) => (
+              <span key={idx} className="bg-orange-50 px-2 py-0.5 rounded-full text-xs">
+                {i}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* buttons */}
+        <div className="flex gap-2">
+          {form.scentStory && (
+            <button className="px-3 py-1 border rounded-full text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+              Scent Story
+            </button>
+          )}
+          {form.usageTips && (
+            <button className="px-3 py-1 border rounded-full text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+              Usage Tips
+            </button>
+          )}
+        </div>
+
+       {/* scent story preview */}
+{form.scentStory && (
+  <p className="text-gray-500 text-sm italic">
+    Inspired by {decodeHtml(form.scentStory)
+      .replace(/<[^>]*>/g, "")
+      .substring(0, 60)}
+  </p>
+)}
+        {/* price */}
+        <div>
+          <div className="flex items-end gap-3">
+            <span className="text-3xl font-bold text-orange-500">
+              ₹{selectedVariant?.price || form.mrp || "0"}
+            </span>
+            {lowestPrice && lowestPrice < (form.mrp || 0) && (
+              <span className="line-through text-gray-400 text-sm">
+                ₹{form.mrp}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Inclusive of all taxes
+          </p>
+        </div>
+
+        {/* variants */}
+        {form.variants?.some((v: any) => v.size) && (
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {form.variants.filter((v: any) => v.size.trim()).map((v: any, i: number) => (
+              <button
+                key={i}
+                onClick={() => setSelectedVariant(v)}
+                className={`px-4 py-2 border rounded-xl text-sm transition-all
+                  ${selectedVariant?.size === v.size
+                    ? 'border-orange-500 bg-orange-50 text-orange-600'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+              >
+                {v.size} {v.price && `· ₹${v.price}`}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* quantity and add to cart */}
+        <div className="flex items-center gap-4 mt-3">
+          <div className="flex items-center border rounded-xl overflow-hidden">
+            <button
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="px-3 py-2 text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Minus size={14} />
+            </button>
+            <span className="w-10 text-center text-sm font-medium">{quantity}</span>
+            <button
+              onClick={() => setQuantity(quantity + 1)}
+              className="px-3 py-2 text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+          <button className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600 transition-colors">
+            Add To Cart
+          </button>
+        </div>
+
+        {/* ACCORDION */}
+        <div className="mt-6 space-y-3">
+          {form.description && (
+            <details className="border rounded-xl p-3">
+              <summary className="font-semibold cursor-pointer text-gray-800">
+                Product Description
+              </summary>
+              <div
+                className="mt-2 text-sm text-gray-600 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: form.description?.replace(/&nbsp;/g, ' ')
+                }}
+              />
+            </details>
+          )}
+
+          {form.usageTips && (
+            <details className="border rounded-xl p-3">
+              <summary className="font-semibold cursor-pointer text-gray-800">
+                Usage Tips
+              </summary>
+              <div
+                className="mt-2 text-sm text-gray-600 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: form.usageTips?.replace(/&nbsp;/g, ' ')
+                }}
+              />
+            </details>
+          )}
+
+          {form.ingredients?.some((i: string) => i.trim()) && (
+            <details className="border rounded-xl p-3">
+              <summary className="font-semibold cursor-pointer text-gray-800">
+                Ingredients
+              </summary>
+              <ul className="list-disc pl-4 mt-2 text-sm text-gray-600 space-y-1">
+                {form.ingredients.filter((i: string) => i.trim()).map((i: string, idx: number) => (
+                  <li key={idx}>{i}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+
+          {form.brandManufacturerInfo && (
+            <details className="border rounded-xl p-3">
+              <summary className="font-semibold cursor-pointer text-gray-800">
+                Brand & Manufacturer Info
+              </summary>
+              <div
+                className="mt-2 text-sm text-gray-600 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: form.brandManufacturerInfo?.replace(/&nbsp;/g, ' ')
+                }}
+              />
+            </details>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps) => {
   const isEdit = !!initialValues;
   const [showPreview, setShowPreview] = useState(false);
-  const [quantity, setQuantity] = useState(1);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   const [form, setForm] = useState<any>({
     name: "",
@@ -50,12 +334,11 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
     isFeatured: false,
     isActive: true,
     coverimage: "",
-    images: ["", "", "", ""],
+    images: [],
   });
 
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   const { data: collectionData } = Queries.useGetCollections({ page: 1, limit: 100 });
   const { data: seasonData } = Queries.useGetSeasons({ page: 1, limit: 100 });
@@ -90,7 +373,7 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
 
     const images = Array.isArray(initialValues.images) && initialValues.images.length
       ? initialValues.images
-      : ["", "", "", ""];
+      : [];
 
     let collectionIds = [];
     if (initialValues.collectionIds) {
@@ -134,11 +417,6 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
       images: images,
     });
   }, [initialValues]);
-
-  // Reset image index when form.images changes
-  useEffect(() => {
-    setCurrentImageIndex(0);
-  }, [form.coverimage, form.images]);
 
   const updateArrayField = (field: string, index: number, value: string) => {
     const updated = [...form[field]];
@@ -227,60 +505,6 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
   };
 
   const hasValidVariant = form.variants.some((item: any) => item.size.trim());
-
-  const getLowestPrice = () => {
-    const prices = form.variants.filter((v: any) => v.price).map((v: any) => v.price);
-    return prices.length > 0 ? Math.min(...prices) : null;
-  };
-  const lowestPrice = getLowestPrice();
-
-  // Get all images for preview (cover + extra images)
-  const getAllPreviewImages = () => {
-    const images = [];
-    if (form.coverimage) {
-      images.push(form.coverimage);
-    }
-    if (form.images && Array.isArray(form.images)) {
-      const validImages = form.images.filter((img: string) => img && img.trim() !== "");
-      images.push(...validImages);
-    }
-    return images;
-  };
-
-  const allImages = getAllPreviewImages();
-  const currentImage = allImages[currentImageIndex] || "";
-
-  const nextImage = () => {
-    if (allImages.length > 0) {
-      setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-    }
-  };
-
-  const prevImage = () => {
-    if (allImages.length > 0) {
-      setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-    }
-  };
-
-  // Get first collection name for brand display
-  const getFirstCollectionName = () => {
-    if (form.collectionIds.length > 0 && collectionOptions.length > 0) {
-      const collection = collectionOptions.find((c: any) => c.value === form.collectionIds[0]);
-      return collection?.label || "";
-    }
-    return "";
-  };
-
-  const firstCollection = getFirstCollectionName();
-
-  // Get selected variant
-  const [selectedVariant, setSelectedVariant] = useState<any>(null);
-  useEffect(() => {
-    const validVariants = form.variants.filter((v: any) => v.size.trim());
-    if (validVariants.length > 0 && !selectedVariant) {
-      setSelectedVariant(validVariants[0]);
-    }
-  }, [form.variants, selectedVariant]);
 
   return (
     <div className="fixed inset-0 bg-gray-50 overflow-hidden">
@@ -516,9 +740,9 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
             </div>
           </div>
 
-          {/* Preview Section - EXACT MATCH to screenshot with ALL images */}
+          {/* Preview Section - Using ProductPreview component */}
           <div className={showPreview ? "block" : "block"}>
-            <div className="sticky top-24">
+            <div className="sticky top-1">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
                 {/* Preview Header */}
                 <div className="px-5 py-3 border-b border-gray-100 bg-white">
@@ -539,8 +763,8 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
                   </div>
                 </div>
 
-                {/* Product Card - with image carousel for multiple images */}
-                <div className="max-h-[calc(100vh-160px)] overflow-y-auto">
+                {/* Product Preview Component */}
+                <div className="max-h-[calc(100vh-160px)] overflow-y-auto p-5">
                   {!form.name && !form.coverimage ? (
                     <div className="text-center py-16 px-6">
                       <div className="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gray-50 flex items-center justify-center border-2 border-dashed border-gray-200">
@@ -550,261 +774,7 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
                       <p className="text-sm text-gray-400">Fill the form to see preview</p>
                     </div>
                   ) : (
-                    <div className="p-5">
-                      {/* Product Image Container - with carousel for multiple images */}
-                      <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 mb-4">
-                        {currentImage ? (
-                          <>
-                            <img 
-                              src={currentImage} 
-                              alt={form.name} 
-                              className="w-full aspect-square object-cover"
-                              onError={(e) => {
-                                console.error("Image failed to load:", currentImage);
-                                e.currentTarget.src = "https://placehold.co/600x600?text=No+Image";
-                              }}
-                            />
-                            {/* Image Navigation Arrows - only show if multiple images */}
-                            {allImages.length > 1 && (
-                              <>
-                                <button
-                                  onClick={prevImage}
-                                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-all"
-                                >
-                                  <ChevronLeft size={16} />
-                                </button>
-                                <button
-                                  onClick={nextImage}
-                                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-all"
-                                >
-                                  <ChevronRight size={16} />
-                                </button>
-                                {/* Image Counter */}
-                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
-                                  {currentImageIndex + 1} / {allImages.length}
-                                </div>
-                              </>
-                            )}
-                            {/* Thumbnail strip for extra images */}
-                            {allImages.length > 1 && (
-                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-                                {allImages.slice(0, 5).map(( idx) => (
-                                  <button
-                                    key={idx}
-                                    onClick={() => setCurrentImageIndex(idx)}
-                                    className={`w-1.5 h-1.5 rounded-full transition-all ${currentImageIndex === idx ? 'bg-white w-3' : 'bg-white/50'}`}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="w-full aspect-square bg-gray-100 flex items-center justify-center">
-                            <Package size={48} className="text-gray-300" />
-                          </div>
-                        )}
-                        {/* Gender Badge on Image */}
-                        <div className="absolute top-3 left-3">
-                          <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
-                            {form.gender === "men" ? "MEN" : form.gender === "women" ? "WOMEN" : "UNISEX"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Product Info - Exact layout from screenshot */}
-                      <div className="space-y-3">
-                        {/* Brand/Collection Name - Like "EM5™" */}
-                        {firstCollection && (
-                          <div className="flex items-center gap-0.5">
-                            <span className="text-base font-bold tracking-tight text-gray-800">{firstCollection}</span>
-                            <span className="text-[10px] align-top text-gray-400">™</span>
-                          </div>
-                        )}
-
-                        {/* Product Name */}
-                        <h2 className="text-xl font-bold text-gray-900 leading-tight">
-                          {form.name || "Product Name"}
-                        </h2>
-
-                        {/* Subtitle - Like "em is melting good?" */}
-                        {form.title && (
-                          <p className="text-xs text-gray-400 italic -mt-0.5">
-                            {form.title}
-                          </p>
-                        )}
-
-                        {/* Perfume Name with concentration */}
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-800">
-                            {form.name || "Perfume"} Eau De Parfum
-                          </h3>
-                          {form.scentStory && (
-                            <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1">
-                              {form.scentStory.replace(/<[^>]*>/g, '').substring(0, 60)}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Gender tag */}
-                        <div className="inline-block">
-                          <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                            {form.gender === "men" ? "MEN" : form.gender === "women" ? "WOMEN" : "UNISEX"}
-                          </span>
-                        </div>
-
-                        {/* Perfume name line - Like "Midnight Musk Perfume" */}
-                        {form.name && (
-                          <p className="text-sm font-medium text-gray-800">
-                            {form.name} Perfume
-                          </p>
-                        )}
-
-                        {/* Description line */}
-                        {form.description && (
-                          <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
-                            {form.description.replace(/<[^>]*>/g, '').substring(0, 100)}
-                          </p>
-                        )}
-
-                        {/* Ingredients/Notes - Like "Alcohol | Musk Oil | Essential Oils" */}
-                        {form.ingredients.some((i: string) => i.trim()) && (
-                          <div className="flex flex-wrap items-center gap-0 text-[10px] text-gray-400">
-                            {form.ingredients.filter((i: string) => i.trim()).slice(0, 3).map((ing: string, idx: number) => (
-                              <span key={idx} className="flex items-center">
-                                {idx > 0 && <span className="mx-1 text-gray-300">|</span>}
-                                <span>{ing}</span>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Scent Story & Usage Tips section */}
-                        <div className="space-y-0.5 text-[10px]">
-                          {form.scentStory && (
-                            <p className="text-gray-500">
-                              <span className="font-semibold text-gray-600">Scent Story:</span> {form.scentStory.replace(/<[^>]*>/g, '').substring(0, 50)}
-                            </p>
-                          )}
-                          {form.usageTips && (
-                            <p className="text-gray-500">
-                              <span className="font-semibold text-gray-600">Usage Tips:</span> {form.usageTips.replace(/<[^>]*>/g, '').substring(0, 50)}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Inspired by line */}
-                        {form.scentStory && (
-                          <p className="text-[10px] text-gray-400 italic">
-                            Inspired by {form.scentStory.replace(/<[^>]*>/g, '').substring(0, 45)}
-                          </p>
-                        )}
-
-                        {/* Price Section */}
-                        <div className="pt-1">
-                          {form.mrp && (
-                            <div className="flex items-baseline gap-2 flex-wrap">
-                              <span className="text-2xl font-bold text-gray-900">₹{form.mrp}</span>
-                              {lowestPrice !== null && lowestPrice < form.mrp && (
-                                <>
-                                  <span className="text-sm text-gray-400 line-through">₹{form.mrp}</span>
-                                  <span className="text-[11px] text-green-600 font-medium">Save ₹{form.mrp - lowestPrice}</span>
-                                </>
-                              )}
-                            </div>
-                          )}
-                          {form.mrp && (
-                            <>
-                              <div className="text-[10px] text-gray-400">M.R.P. {form.mrp}</div>
-                              <div className="text-[9px] text-gray-400">Inclusive of all taxes</div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Sizes/Variants - Like "50ml | 100ml" */}
-                        {form.variants.some((v: any) => v.size) && (
-                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                            {form.variants.filter((v: any) => v.size).map((variant: any, idx: number) => (
-                              <button
-                                key={idx}
-                                onClick={() => setSelectedVariant(variant)}
-                                className={`px-2 py-0.5 rounded text-xs transition-all ${selectedVariant?.size === variant.size
-                                  ? 'bg-gray-900 text-white'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                  }`}
-                              >
-                                {variant.size} {variant.price && `₹${variant.price}`}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Quantity and Add to Cart */}
-                        <div className="flex items-center gap-3 pt-2">
-                          <div className="flex items-center border border-gray-200 rounded-lg">
-                            <button
-                              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors"
-                            >
-                              <Minus size={14} />
-                            </button>
-                            <span className="w-8 text-center text-sm font-medium">{quantity}</span>
-                            <button
-                              onClick={() => setQuantity(quantity + 1)}
-                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors"
-                            >
-                              <PlusIcon size={14} />
-                            </button>
-                          </div>
-                          <button className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
-                            Add To Cart
-                          </button>
-                        </div>
-
-                        {/* Expandable sections - Product Description, Usage Tips, Ingredients, Brand & Manufacturer Info */}
-                        <div className="border-t border-gray-100 pt-3 space-y-2">
-                          {form.description && (
-                            <details className="group">
-                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
-                                Product Description
-                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
-                              </summary>
-                              <div className="text-[10px] text-gray-500 mt-1 pl-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: form.description }} />
-                            </details>
-                          )}
-                          {form.usageTips && (
-                            <details className="group">
-                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
-                                Usage Tips
-                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
-                              </summary>
-                              <div className="text-[10px] text-gray-500 mt-1 pl-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: form.usageTips }} />
-                            </details>
-                          )}
-                          {form.ingredients.some((i: string) => i.trim()) && (
-                            <details className="group">
-                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
-                                Ingredients
-                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
-                              </summary>
-                              <div className="text-[10px] text-gray-500 mt-1 pl-2">
-                                {form.ingredients.filter((i: string) => i.trim()).map((ing: string, idx: number) => (
-                                  <div key={idx}>• {ing}</div>
-                                ))}
-                              </div>
-                            </details>
-                          )}
-                          {form.brandManufacturerInfo && (
-                            <details className="group">
-                              <summary className="text-[11px] font-semibold text-gray-700 cursor-pointer list-none flex items-center justify-between">
-                                Brand & Manufacturer Info
-                                <ChevronDown size={12} className="text-gray-400 group-open:rotate-180 transition-transform" />
-                              </summary>
-                              <div className="text-[10px] text-gray-500 mt-1 pl-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: form.brandManufacturerInfo }} />
-                            </details>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <ProductPreview form={form} />
                   )}
                 </div>
               </div>

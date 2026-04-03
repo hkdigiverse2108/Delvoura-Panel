@@ -309,22 +309,22 @@ const Product = () => {
             />
           </div>
 
-          <div className="product-filter-field">
-            <label>Featured</label>
-            <Select
-              value={typeof filters.FeaturedFilter === "undefined" ? undefined : filters.FeaturedFilter}
-              onChange={(value: boolean | undefined) =>
-                setFilters((prev: any) => ({ ...prev, FeaturedFilter: value }))
-              }
-              allowClear
-              size="large"
-              placeholder="Select Type"
-              options={[
-                { label: "Featured", value: true },
-                { label: "Normal", value: false }
-              ]}
-            />
-          </div>
+            <div className="product-filter-field">
+              <label>Featured</label>
+              <Select
+                value={typeof filters.FeaturedFilter === "undefined" ? undefined : filters.FeaturedFilter}
+                onChange={(value: boolean | undefined) =>
+                  setFilters((prev: any) => ({ ...prev, FeaturedFilter: value }))
+                }
+                allowClear
+                size="large"
+                placeholder="Select Type"
+                options={[
+                  { label: "Featured", value: true },
+                  { label: "Normal", value: false }
+                ]}
+              />
+            </div>
 
           <div className="product-filter-field">
             <label>Collection</label>

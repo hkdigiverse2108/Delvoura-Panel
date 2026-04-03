@@ -10,7 +10,7 @@ interface CommonPageHeaderProps {
 
 const CommonPageHeader = ({
   title,
-  // subtitle,
+  subtitle,
   buttonText,
   onButtonClick,
   buttonIcon,
@@ -19,9 +19,9 @@ const CommonPageHeader = ({
     <header className="mb-6 flex justify-between items-center px-4">
       <div>
         <h1 className="text-2xl font-bold">{title}</h1>
-        {/* {subtitle && (
+        {subtitle && (
           <p className="text-gray-500 text-sm">{subtitle}</p>
-        )} */}
+        )}
       </div>
 
       {/* ✅ ONLY SHOW BUTTON IF buttonText EXISTS */}

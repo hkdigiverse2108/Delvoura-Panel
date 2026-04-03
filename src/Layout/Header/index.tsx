@@ -1,20 +1,11 @@
 "use client";
 
 import { Layout, Dropdown, Avatar, Space, Badge } from "antd";
-import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UserOutlined,
-  LogoutOutlined,
-  LockOutlined,
-  BellOutlined,
-  SettingOutlined,
-  DownOutlined,
-} from "@ant-design/icons";
-
+import { MenuFoldOutlined,  MenuUnfoldOutlined, UserOutlined, LogoutOutlined,  LockOutlined, BellOutlined, SettingOutlined, DownOutlined,} from "@ant-design/icons";
 import { useAppDispatch, useAppSelector } from "../../Store/hooks";
 import { setLogout } from "../../Store/Slices/AuthSlice";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 
 const { Header } = Layout;
@@ -29,18 +20,41 @@ interface AppHeaderProps {
 const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
   
+
+  useEffect(() => {
+  const checkSession = () => {
+    const loginTime = localStorage.getItem("loginTime");
+
+    if (loginTime) {
+      const twelveHours = 12 * 60 * 60 * 1000; // 12 hours
+      const currentTime = Date.now();
+
+      if (currentTime - Number(loginTime) > twelveHours) {
+        dispatch(setLogout());
+        localStorage.removeItem("loginTime");
+        navigate("/login");
+      }
+    }
+  };
+
+  checkSession();
+
+  const interval = setInterval(checkSession, 60000); // check every 1 minute
+
+  return () => clearInterval(interval);
+}, [dispatch, navigate]);
+
   const user = useAppSelector((state : any) => state.auth.user);
 
   const fullName =
     `${user?.firstName} ${user?.lastName  || ""}`.trim() || "Admin";
 
-  const handleLogout = () => {
-    dispatch(setLogout());
-    navigate("/login");
-  };
-
+ const handleLogout = () => {
+  localStorage.removeItem("loginTime");
+  dispatch(setLogout());
+  navigate("/login");
+};
   const userMenuItems = [
     {
       key: "profile",

@@ -52,15 +52,6 @@ const RefundPolicy = () => {
   return (
     <div className="user-page w-full">
       <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5 relative">
-        {/* NEW Badge */}
-        <div className="absolute -top-3 -right-3 z-10">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75"></div>
-            <div className="relative px-3 py-1 text-xs font-bold text-white rounded-full shadow-lg" style={{ background: "linear-gradient(135deg, var(--primary), #ff4d4f)", boxShadow: "0 0 15px var(--primary)" }}>
-              NEW
-            </div>
-          </div>
-        </div>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">

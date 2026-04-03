@@ -27,10 +27,12 @@ const Login = () => {
         setValue("password", "");
       } else if (res.data?.token) {
         const { token, user } = res.data;
-        localStorage.setItem("token", token);
-        dispatch(setLogin({ user, token }));
-        message.success("Login successful");
-        navigate("/");
+       localStorage.setItem("token", token);
+      localStorage.setItem("loginTime", Date.now().toString()); 
+
+     dispatch(setLogin({ user, token }));
+     message.success("Login successful");
+navigate("/");
       }
     } catch (error: any) { message.error(error?.message || "Login failed"); }
   };
@@ -40,10 +42,12 @@ const Login = () => {
       const res: any = await verifyOtpMutation.mutateAsync({ email: emailForOtp, otp: data.otp });
       const { token, user } = res.data;
       if (!token) throw new Error("Token not found");
-      localStorage.setItem("token", token);
-      dispatch(setLogin({ user, token }));
-      message.success("Login successful");
-      navigate("/");
+     localStorage.setItem("token", token);
+localStorage.setItem("loginTime", Date.now().toString()); 
+
+dispatch(setLogin({ user, token }));
+message.success("Login successful");
+navigate("/");
     } catch (error: any) { message.error(error?.message || "OTP verification failed"); }
   };
 
@@ -54,7 +58,6 @@ const Login = () => {
         <div className="absolute -top-3 -right-3 z-10">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75"></div>
-            <div className="relative px-3 py-1 text-xs font-bold text-white rounded-full shadow-lg" style={{ background: "linear-gradient(135deg, var(--primary), #ff4d4f)", boxShadow: "0 0 15px var(--primary)" }}>NEW</div>
           </div>
         </div>
 

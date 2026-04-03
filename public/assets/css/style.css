@@ -561,7 +561,7 @@ body {
 
 .content-wrapper {
   
-  background-color: #f8f8f8;
+  background-color: #f8f6f3;
   padding: 30px 0px !important;
   /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02) !important; */
   /* border: 1px solid var(--primary-20) !important; */
@@ -757,7 +757,7 @@ body {
 .ant-input-number,
 .ant-input-number-affix-wrapper {
   border-radius: 10px !important;
-  border-color: var(--gray-border) !important;
+
   box-shadow: none !important;
   transition: all 0.2s ease;
 }
@@ -1685,14 +1685,6 @@ select:focus-visible {
 }
 
 
-/* in your global CSS */
-.bg-primary-10 {
-  background-color: var(--primary-10);
-}
-
-.text-primary {
-  color: var(--primary);
-}
 
 /* global.css */
 .input-primary {
@@ -1935,4 +1927,138 @@ select:focus-visible {
 .ant-btn-primary:hover {
   background: var(--primary-80) !important;
   border-color: var(--primary-80) !important;
+}
+
+/* Select hover */
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: var(--primary) !important;
+}
+
+/* Select focus */
+.ant-select-focused .ant-select-selector {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-20) !important;
+}
+
+/* Select active */
+.ant-select-selector:focus {
+  border-color: var(--primary) !important;
+}
+
+/* Remove default blue outline */
+.ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-20) !important;
+}
+
+/* DatePicker border */
+.product-filter-field .ant-picker {
+  border-color: var(--primary) !important;
+}
+
+/* Hover */
+.product-filter-field .ant-picker:hover {
+  border-color: var(--primary) !important;
+}
+
+/* Focus */
+.product-filter-field .ant-picker-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-20) !important;
+}
+
+/* Active input */
+.product-filter-field .ant-picker-input > input:focus {
+  box-shadow: none !important;
+}
+
+/* Remove default blue outline */
+.product-filter-field .ant-picker-focused {
+  outline: none !important;
+}
+
+/* Selected date */
+.ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+/* Range hover background */
+.ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner,
+.ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background: var(--primary) !important;
+}
+
+/* Range background */
+.ant-picker-cell-in-view.ant-picker-cell-in-range::before {
+  background: var(--primary-15) !important;
+}
+
+/* Hover date */
+.ant-picker-cell:hover .ant-picker-cell-inner {
+  background: var(--primary-10) !important;
+}
+
+/* ===== DatePicker Border ===== */
+.product-filter-field .ant-picker,
+.product-filter-field .ant-picker:hover,
+.product-filter-field .ant-picker-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-20) !important;
+}
+
+/* ===== Remove input focus blue ===== */
+.product-filter-field .ant-picker-input > input:focus {
+  box-shadow: none !important;
+}
+
+/* ===== Selected Date ===== */
+.ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+/* ===== Range Background ===== */
+.ant-picker-cell-in-view.ant-picker-cell-in-range::before {
+  background: var(--primary-15) !important;
+}
+
+/* ===== Hover Date ===== */
+.ant-picker-cell:hover .ant-picker-cell-inner {
+  background: var(--primary-10) !important;
+}
+
+/* ===== Today Border ===== */
+.ant-picker-cell-today .ant-picker-cell-inner::before {
+  border-color: var(--primary) !important;
+}
+
+/* ===== Time Picker Active ===== */
+.ant-picker-time-panel-column > li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+  background: var(--primary-20) !important;
+}
+
+/* ===== Time Hover ===== */
+.ant-picker-time-panel-column > li:hover .ant-picker-time-panel-cell-inner {
+  background: var(--primary-10) !important;
+}
+
+/* ===== Time Input Underline ===== */
+.ant-picker-time-panel input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+/* ===== Remove Blue Active Outline ===== */
+.ant-picker-focused {
+  outline: none !important;
+}
+
+/* in your global CSS */
+.bg-primary-10 {
+  background-color: var(--primary-10);
+}
+
+.text-primary {
+  color: var(--primary);
 }

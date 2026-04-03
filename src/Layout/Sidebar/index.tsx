@@ -21,6 +21,7 @@ import {
   DownOutlined,
   MailOutlined,
   SettingOutlined,
+  StarOutlined,
 } from "@ant-design/icons";
 
 import { PAGE_TITLE, ROUTES } from "../../Constants";
@@ -91,7 +92,6 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     { key: ROUTES.USERS.BASE, icon: <UserOutlined />, label: PAGE_TITLE.USERS.LABEL },
     { key: ROUTES.PRODUCT.BASE, icon: <ShoppingOutlined />, label: PAGE_TITLE.PRODUCT.LABEL },
 
-    // ✅ Catalog dropdown will replace season/collection/scent
 
     { key: ROUTES.BLOG.BASE, icon: <FileTextOutlined />, label: PAGE_TITLE.BLOG.LABEL },
     { key: ROUTES.BANNER.BASE, icon: <PictureOutlined />, label: PAGE_TITLE.BANNER.LABEL },
@@ -99,9 +99,9 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     { key: ROUTES.INSTAGRAM.BASE, icon: <InstagramOutlined />, label: PAGE_TITLE.INSTAGRAM.LABEL },
     { key: ROUTES.CONTACT_US.BASE, icon: <MailOutlined />, label: PAGE_TITLE.CONTACT_US.LABEL },
     { key: ROUTES.NEWSLETTER.BASE, icon: <MailOutlined />, label: PAGE_TITLE.NEWSLETTER.LABEL },
-    { key: ROUTES.RATING.BASE, icon: <MailOutlined />, label: PAGE_TITLE.RATING.LABEL },
-    { key: "/settings", icon: <SettingOutlined />, label: "Settings" },{ key: "/orders", icon: <ShoppingOutlined />,label: "Orders",
-}
+    { key: ROUTES.RATING.BASE, icon:<StarOutlined />, label: PAGE_TITLE.RATING.LABEL },
+    { key: "/orders", icon: <ShoppingOutlined />,label: "Orders",},
+    { key: "/settings", icon: <SettingOutlined />, label: "Settings" },
   ];
 
   // Catalog submenu
