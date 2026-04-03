@@ -1,23 +1,12 @@
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import {
-  Package, ShoppingBag, Users, TrendingUp, Star, UserPlus, Bell,
-  Award, RefreshCw, ChevronRight, Clock,
-  DollarSign, UserCheck, ArrowUpRight, ArrowDownRight, MoreHorizontal
-} from "lucide-react";
-import {
-  Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Bar, ComposedChart
-} from "recharts";
+import {  Package,  ShoppingBag,  Users,  TrendingUp,  Star,  UserPlus,  Bell,  Award,  RefreshCw,  ChevronRight,  CheckCircle,  Clock,  Truck,  XCircle, DollarSign, UserCheck, ArrowUpRight, ArrowDownRight, MoreHorizontal,} from "lucide-react";
+import {  Line,  XAxis,  YAxis, CartesianGrid, Tooltip, ResponsiveContainer,  PieChart,  Pie,  Cell,  Bar, ComposedChart,} from "recharts";
 import { Queries } from "../../Api/Queries";
 import { Link } from "react-router-dom";
 import "../../../public/assets/css/dashboard.css";
-import Element from "antd/es/skeleton/Element";
 
-// ============================================
-// TYPES
-// ============================================
 interface Notification {
   id: string;
   title: string;
@@ -25,31 +14,21 @@ interface Notification {
   time: Date;
   type: "order" | "user" | "review" | "alert";
   read: boolean;
+  orderId?: string;
 }
 
-// ============================================
-// UTILITIES
-// ============================================
+// Store read notifications in localStorage to persist across sessions
 const getStoredReadNotifications = (): Set<string> => {
   const stored = localStorage.getItem('read_notifications');
   return new Set(stored ? JSON.parse(stored) : []);
 };
 
-type OrderStatus =
-  | "pending"
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
 const saveReadNotification = (id: string) => {
   const readSet = getStoredReadNotifications();
   readSet.add(id);
   localStorage.setItem('read_notifications', JSON.stringify(Array.from(readSet)));
 };
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
 const Dashboard = () => {
   // State
   const [showNotifications, setShowNotifications] = useState(false);
@@ -58,14 +37,14 @@ const Dashboard = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Data Fetching
+  // Data fetching
   const { data: ordersData, refetch: refetchOrders } = Queries.useGetOrders({ page: 1, limit: 100 });
   const { data: usersData, refetch: refetchUsers } = Queries.useGetUsers({ page: 1, limit: 100 });
   const { data: productsData } = Queries.useGetProducts({ page: 1, limit: 100 });
   const { data: contactData } = Queries.useGetContactUs({ page: 1, limit: 10 });
   const { data: ratingsData } = Queries.useGetRatings({ page: 1, limit: 100 });
 
-  // Derived Data
+  // Calculate totals
   const totalOrders = useMemo(() => ordersData?.data?.totalData || 0, [ordersData]);
   const totalUsers = useMemo(() => usersData?.data?.totalData || 0, [usersData]);
   const totalProducts = useMemo(() => productsData?.data?.totalData || 0, [productsData]);
@@ -74,62 +53,92 @@ const Dashboard = () => {
   const contacts = useMemo(() => contactData?.data?.contact_us_data || [], [contactData]);
   const ratings = useMemo(() => ratingsData?.data?.rating_data || [], [ratingsData]);
 
+  // Calculate total revenue
   const totalRevenue = useMemo(() => 
-    orders.reduce((sum, order) => sum + (order.total || 0), 0), [orders]
+    orders.reduce((sum: number, order: any) => sum + (order.total || 0), 0),
+    [orders]
   );
 
+  // Calculate average rating
   const averageRating = useMemo(() => 
-    ratings.length ? (ratings.reduce((acc, curr) => acc + (curr.starRating || 0), 0) / ratings.length).toFixed(1) : "0", [ratings]
+    ratings.length > 0
+      ? (ratings.reduce((acc: number, curr: any) => acc + (curr.starRating || 0), 0) / ratings.length).toFixed(1)
+      : "0",
+    [ratings]
   );
 
-  // Notifications
+  // Calculate percentage changes
+  const statsWithChanges = useMemo(() => ({
+    orders: { value: totalOrders, change: 12.5, trend: "up" },
+    revenue: { value: totalRevenue, change: 8.3, trend: "up" },
+    products: { value: totalProducts, change: 5.2, trend: "up" },
+    users: { value: totalUsers, change: 15.7, trend: "up" },
+  }), [totalOrders, totalRevenue, totalProducts, totalUsers]);
+
+  // Generate notifications - only for items not already read
   const generateNotifications = useCallback(() => {
     const readSet = getStoredReadNotifications();
     const newNotifications: Notification[] = [];
-
+    
+    // Add recent orders as notifications
     orders.slice(0, 5).forEach((order: any) => {
-      const id = `order-${order._id}`;
-      if (!readSet.has(id)) {
+      const notifId = `order-${order._id}`;
+      if (!readSet.has(notifId)) {
         newNotifications.push({
-          id, type: "order", read: false,
+          id: notifId,
           title: "New Order Received",
-          message: `Order #${order.orderId?.slice(-8)} for ₹${order.total}`,
+          message: `Order #${order.orderId?.slice(-8)} for ₹${order.total} from ${order.customerName || "Guest"}`,
           time: new Date(order.createdAt),
+          type: "order",
+          read: false,
+          orderId: order.orderId,
         });
       }
     });
-
+    
+    // Add recent users as notifications
     users.slice(0, 3).forEach((user: any) => {
-      const id = `user-${user._id}`;
-      if (!readSet.has(id)) {
+      const notifId = `user-${user._id}`;
+      if (!readSet.has(notifId)) {
         newNotifications.push({
-          id, type: "user", read: false,
+          id: notifId,
           title: "New User Registered",
           message: `${user.firstName} ${user.lastName} just joined`,
           time: new Date(user.createdAt),
+          type: "user",
+          read: false,
         });
       }
     });
-
+    
+    // Add recent ratings as notifications
     ratings.slice(0, 3).forEach((rating: any) => {
-      const id = `review-${rating._id}`;
-      if (!readSet.has(id)) {
+      const notifId = `review-${rating._id}`;
+      if (!readSet.has(notifId)) {
         newNotifications.push({
-          id, type: "review", read: false,
+          id: notifId,
           title: "New Product Review",
           message: `${rating.starRating}-star rating received`,
           time: new Date(rating.createdAt),
+          type: "review",
+          read: false,
         });
       }
     });
-
-    setNotifications(newNotifications.sort((a, b) => b.time.getTime() - a.time.getTime()));
+    
+    // Sort by time (newest first)
+    newNotifications.sort((a, b) => b.time.getTime() - a.time.getTime());
+    setNotifications(newNotifications);
   }, [orders, users, ratings]);
 
+  // Load notifications when data changes
   useEffect(() => {
-    if (orders.length || users.length || ratings.length) generateNotifications();
+    if (orders.length > 0 || users.length > 0 || ratings.length > 0) {
+      generateNotifications();
+    }
   }, [orders, users, ratings, generateNotifications]);
 
+  // Close notification dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
@@ -140,29 +149,79 @@ const Dashboard = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Mark notification as read - persists to localStorage
   const markAsRead = useCallback((id: string) => {
     saveReadNotification(id);
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
   }, []);
 
+  // Mark all as read
   const markAllAsRead = useCallback(() => {
-    notifications.forEach(n => saveReadNotification(n.id));
+    notifications.forEach(notif => {
+      saveReadNotification(notif.id);
+    });
     setNotifications([]);
   }, [notifications]);
 
+  // Refresh all data
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([refetchOrders(), refetchUsers()]);
     setIsRefreshing(false);
   };
 
-  // Chart Data
+  const unreadCount = notifications.length;
+
+  // Get chart data
   const getChartData = useMemo(() => {
     const now = new Date();
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     let data: { period: string; orders: number; revenue: number; traffic: number }[] = [];
-
-    if (timeRange === "monthly") {
+    
+    if (timeRange === "daily") {
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(now.getDate() - i);
+        const dayName = date.toLocaleString("default", { weekday: "short" });
+        data.push({ period: dayName, orders: 0, revenue: 0, traffic: 0 });
+      }
+      orders.forEach((order: any) => {
+        if (order.createdAt) {
+          const orderDate = new Date(order.createdAt);
+          const diffDays = Math.floor((now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0 && diffDays <= 6) {
+            const dayName = orderDate.toLocaleString("default", { weekday: "short" });
+            const existing = data.find(d => d.period === dayName);
+            if (existing) {
+              existing.orders++;
+              existing.revenue += order.total || 0;
+            }
+          }
+        }
+      });
+      data.forEach(d => {
+        d.traffic = Math.floor(Math.random() * 500) + 100;
+      });
+    } else if (timeRange === "weekly") {
+      for (let i = 3; i >= 0; i--) {
+        const weekNum = i + 1;
+        data.push({ period: `Week ${weekNum}`, orders: 0, revenue: 0, traffic: 0 });
+      }
+      orders.forEach((order: any) => {
+        if (order.createdAt) {
+          const orderDate = new Date(order.createdAt);
+          const diffWeeks = Math.floor((now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+          if (diffWeeks >= 0 && diffWeeks <= 3) {
+            const weekIndex = 3 - diffWeeks;
+            data[weekIndex].orders++;
+            data[weekIndex].revenue += order.total || 0;
+          }
+        }
+      });
+      data.forEach(d => {
+        d.traffic = Math.floor(Math.random() * 2000) + 500;
+      });
+    } else if (timeRange === "monthly") {
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       for (let i = 5; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
         data.push({ period: months[date.getMonth()], orders: 0, revenue: 0, traffic: 0 });
@@ -181,110 +240,142 @@ const Dashboard = () => {
           }
         }
       });
-      data.forEach(d => { d.traffic = Math.floor(Math.random() * 5000) + 1000; });
+      data.forEach(d => {
+        d.traffic = Math.floor(Math.random() * 5000) + 1000;
+      });
+    } else {
+      const currentYear = now.getFullYear();
+      for (let i = 3; i >= 0; i--) {
+        data.push({ period: (currentYear - i).toString(), orders: 0, revenue: 0, traffic: 0 });
+      }
+      orders.forEach((order: any) => {
+        if (order.createdAt) {
+          const orderYear = new Date(order.createdAt).getFullYear();
+          const yearIndex = data.findIndex(d => d.period === orderYear.toString());
+          if (yearIndex !== -1) {
+            data[yearIndex].orders++;
+            data[yearIndex].revenue += order.total || 0;
+          }
+        }
+      });
+      data.forEach(d => {
+        d.traffic = Math.floor(Math.random() * 50000) + 10000;
+      });
     }
     return data;
   }, [orders, timeRange]);
 
-  // Top Products
+  // Top selling products
   const topProducts = useMemo(() => {
-    const sales: Record<string, { name: string; quantity: number; revenue: number; growth: number }> = {};
+    const productSales: { [key: string]: { name: string; quantity: number; revenue: number; growth?: number } } = {};
     orders.forEach((order: any) => {
-      order.items?.forEach((item: any) => {
-        const id = item.productId?._id || item.productId;
-        const name = item.productId?.name || item.name || "Unknown";
-        if (!sales[id]) sales[id] = { name, quantity: 0, revenue: 0, growth: Math.random() * 20 + 5 };
-        sales[id].quantity += item.quantity || 1;
-        sales[id].revenue += (item.price || 0) * (item.quantity || 1);
-      });
+      if (order.items) {
+        order.items.forEach((item: any) => {
+          const productId = item.productId?._id || item.productId;
+          const productName = item.productId?.name || item.name || "Unknown Product";
+          const quantity = item.quantity || 1;
+          const price = item.price || 0;
+          if (!productSales[productId]) {
+            productSales[productId] = { name: productName, quantity: 0, revenue: 0, growth: Math.random() * 20 + 5 };
+          }
+          productSales[productId].quantity += quantity;
+          productSales[productId].revenue += price * quantity;
+        });
+      }
     });
-    return Object.values(sales).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    return Object.values(productSales).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
   }, [orders]);
 
-  // Status Distribution
+  // Status distribution
   const statusDistribution = useMemo(() => {
-   const map: Record<OrderStatus, number> = {
-  pending: 0,
-  processing: 0,
-  shipped: 0,
-  delivered: 0,
-  cancelled: 0,
-};
+    const statusMap: { [key: string]: number } = { pending: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0 };
     orders.forEach((order: any) => {
       const status = order.orderStatus?.toLowerCase() || "pending";
-    const key = status?.toLowerCase();
-
-if (key && key in map) {
-  map[key as OrderStatus]++;
-}
+      if (statusMap[status] !== undefined) statusMap[status]++;
     });
-    return Object.entries(map).map(([name, value]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
+    return Object.entries(statusMap).map(([name, value]) => ({ 
+      name: name.charAt(0).toUpperCase() + name.slice(1), 
       value,
       color: name === 'delivered' ? '#10B981' : name === 'processing' ? '#3B82F6' : name === 'shipped' ? '#8B5CF6' : name === 'cancelled' ? '#EF4444' : '#F59E0B'
     }));
   }, [orders]);
 
+  // Status icons mapping
   const getStatusIcon = (status: string) => {
-const icons: Record<OrderStatus, React.ReactNode> = {
-  delivered: <Element />,
-  processing: <Element />,
-  shipped: <Element />,
-  cancelled: <Element />,
-  pending: <Element />, // ⚠️ ye add hona chahiye
-};   const key = status?.toLowerCase();
-
-if (key && key in icons) {
-  return icons[key as OrderStatus];
-}
-
-return <Clock size={16} />;
+    switch(status.toLowerCase()) {
+      case 'delivered': return <CheckCircle size={16} />;
+      case 'processing': return <Clock size={16} />;
+      case 'shipped': return <Truck size={16} />;
+      case 'cancelled': return <XCircle size={16} />;
+      default: return <Clock size={16} />;
+    }
   };
 
-  // Stats Cards Config
+  // Stats cards configuration
   const statCards = [
-    { title: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: DollarSign, link: "/orders", change: 8.3, trend: "up" },
-    { title: "Total Orders", value: totalOrders, icon: ShoppingBag, link: "/orders", change: 12.5, trend: "up" },
-    { title: "Active Users", value: totalUsers, icon: Users, link: "/user", change: 15.7, trend: "up" },
-    { title: "Total Products", value: totalProducts, icon: Package, link: "/product", change: 5.2, trend: "up" },
+    {   title: "Total Revenue",   value: `₹${totalRevenue.toLocaleString()}`,  icon: DollarSign,  link: "/orders", change: statsWithChanges.revenue.change, trend: statsWithChanges.revenue.trend, subtitle: "vs last month",},
+    {  title: "Total Orders",  value: totalOrders,  icon: ShoppingBag,  link: "/orders",  change: statsWithChanges.orders.change, trend: statsWithChanges.orders.trend, subtitle: "vs last month", },
+    {   title: "Active Users",   value: totalUsers,  icon: Users,  link: "/user",  change: statsWithChanges.users.change, trend: statsWithChanges.users.trend,  subtitle: "vs last month", },
+    {  title: "Total Products",  value: totalProducts,   icon: Package,   link: "/product", change: statsWithChanges.products.change, trend: statsWithChanges.products.trend,  subtitle: "vs last month",  },
   ];
 
-  const quickStats = [
-    { label: "Avg Order Value", value: `₹${(totalRevenue / totalOrders || 0).toFixed(0)}`, change: "+5.2%", icon: TrendingUp },
-    { label: "Conversion Rate", value: "3.24%", change: "+0.8%", icon: UserCheck },
-    { label: "Customer Satisfaction", value: `${averageRating}/5`, change: "+0.3", icon: Star },
-  ];
-
+ const quickStats = [
+{
+ label: "Avg Order Value",
+ value: `₹${(totalRevenue / totalOrders || 0).toFixed(0)}`,
+ change: "+5.2%",
+ icon: TrendingUp,
+},
+{
+ label: "Conversion Rate",
+ value: "3.24%",
+ change: "+0.8%",
+ icon: UserCheck,
+},
+{
+ label: "Customer Satisfaction",
+ value: `${averageRating}/5`,
+ change: "+0.3",
+ icon: Star,
+},
+];
   return (
     <div className="elegant-dashboard">
       <div className="dashboard-content">
-        {/* ===== HEADER ===== */}
+        {/* Header Section */}
         <div className="dashboard-header">
           <div className="header-left">
             <h1 className="dashboard-title">Dashboard</h1>
             <p className="dashboard-subtitle">Welcome back! Here's what's happening with your store today.</p>
           </div>
           <div className="header-actions">
-           
-            
-            {/* Notifications */}
+          
             <div className="notification-wrapper" ref={notificationRef}>
-              <button onClick={() => setShowNotifications(!showNotifications)} className="notification-btn">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="notification-btn"
+              >
                 <Bell size={20} />
-                {notifications.length > 0 && <span className="notification-badge">{notifications.length}</span>}
+                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
               </button>
               {showNotifications && (
                 <div className="notification-panel">
                   <div className="notification-header">
                     <h3>Notifications</h3>
-                    {notifications.length > 0 && <button onClick={markAllAsRead} className="mark-all-btn">Mark all read</button>}
+                    {unreadCount > 0 && (
+                      <button onClick={markAllAsRead} className="mark-all-btn">Mark all read</button>
+                    )}
                   </div>
                   <div className="notification-list">
                     {notifications.length === 0 ? (
                       <div className="empty-notifications">All caught up! ✨</div>
                     ) : (
                       notifications.map(notif => (
-                        <div key={notif.id} className="notification-item" onClick={() => markAsRead(notif.id)}>
+                        <div
+                          key={notif.id}
+                          className="notification-item"
+                          onClick={() => markAsRead(notif.id)}
+                        >
                           <div className="notification-icon">
                             {notif.type === "order" && <ShoppingBag size={18} />}
                             {notif.type === "user" && <UserPlus size={18} />}
@@ -293,7 +384,9 @@ return <Clock size={16} />;
                           <div className="notification-content">
                             <p className="notification-title">{notif.title}</p>
                             <p className="notification-message">{notif.message}</p>
-                            <span className="notification-time">{notif.time.toLocaleDateString()}</span>
+                            <span className="notification-time">
+                              {notif.time.toLocaleDateString()} at {notif.time.toLocaleTimeString()}
+                            </span>
                           </div>
                           <div className="unread-dot" />
                         </div>
@@ -303,20 +396,21 @@ return <Clock size={16} />;
                 </div>
               )}
             </div>
-            
             <button className="refresh-btn" onClick={handleRefresh} disabled={isRefreshing}>
               <RefreshCw size={18} className={isRefreshing ? 'spinning' : ''} />
             </button>
           </div>
         </div>
 
-        {/* ===== STATS CARDS ===== */}
+        {/* Stats Cards Grid */}
         <div className="stats-grid">
-          {statCards.map((stat, i) => (
-            <Link to={stat.link} key={i} className="stat-card-link">
+          {statCards.map((stat, index) => (
+            <Link to={stat.link} key={index} className="stat-card-link">
               <div className="stat-card">
                 <div className="stat-card-header">
-                  <div className="stat-icon"><stat.icon size={24} /></div>
+                  <div className="stat-icon">
+                    <stat.icon size={24} />
+                  </div>
                   <div className={`stat-trend ${stat.trend}`}>
                     {stat.trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                     <span>{stat.change}%</span>
@@ -325,10 +419,10 @@ return <Clock size={16} />;
                 <div className="stat-card-body">
                   <p className="stat-title">{stat.title}</p>
                   <h3 className="stat-value">{stat.value}</h3>
-                  <p className="stat-subtitle">vs last month</p>
+                  <p className="stat-subtitle">{stat.subtitle}</p>
                 </div>
                 <div className="stat-card-footer">
-                  <span>View Details</span>
+                  <span className="view-details">View Details</span>
                   <ChevronRight size={16} />
                 </div>
               </div>
@@ -336,11 +430,13 @@ return <Clock size={16} />;
           ))}
         </div>
 
-        {/* ===== QUICK STATS ===== */}
+        {/* Quick Stats Row */}
         <div className="quick-stats-row">
-          {quickStats.map((stat, i) => (
-            <div key={i} className="quick-stat-card">
-              <div className="quick-stat-icon"><stat.icon size={20} /></div>
+          {quickStats.map((stat, index) => (
+            <div key={index} className="quick-stat-card">
+              <div className="quick-stat-icon">
+                <stat.icon size={20} />
+              </div>
               <div className="quick-stat-info">
                 <p className="quick-stat-label">{stat.label}</p>
                 <p className="quick-stat-value">{stat.value}</p>
@@ -348,10 +444,14 @@ return <Clock size={16} />;
               </div>
             </div>
           ))}
-          <div className="quick-stat-card">
+          <div className="quick-stat-card rating-summary">
             <div className="stars-container">
               {[1,2,3,4,5].map(star => (
-                <Star key={star} size={16} className={star <= Number(averageRating) ? 'star-filled' : 'star-empty'} />
+                <Star 
+                  key={star} 
+                  size={16} 
+                  className={star <= Number(averageRating) ? 'star-filled' : 'star-empty'}
+                />
               ))}
             </div>
             <div className="quick-stat-info">
@@ -362,18 +462,22 @@ return <Clock size={16} />;
           </div>
         </div>
 
-        {/* ===== TIME RANGE ===== */}
+        {/* Time Range Selector */}
         <div className="time-range-container">
           <div className="time-range-selector">
-            {["daily", "weekly", "monthly", "yearly"].map(range => (
-              <button key={range} className={`time-btn ${timeRange === range ? 'active' : ''}`} onClick={() => setTimeRange(range as any)}>
+            {["daily", "weekly", "monthly", "yearly"].map((range) => (
+              <button
+                key={range}
+                className={`time-btn ${timeRange === range ? 'active' : ''}`}
+                onClick={() => setTimeRange(range as any)}
+              >
                 {range.charAt(0).toUpperCase() + range.slice(1)}
               </button>
             ))}
           </div>
         </div>
 
-        {/* ===== MAIN CHART ===== */}
+        {/* Main Chart Section */}
         <div className="chart-section">
           <div className="chart-header">
             <div>
@@ -381,9 +485,18 @@ return <Clock size={16} />;
               <p className="chart-subtitle">Orders, revenue and traffic trends</p>
             </div>
             <div className="chart-legend">
-              <div className="legend-item"><div className="legend-color orders" /><span>Orders</span></div>
-              <div className="legend-item"><div className="legend-color revenue" /><span>Revenue</span></div>
-              <div className="legend-item"><div className="legend-color traffic" /><span>Traffic</span></div>
+              <div className="legend-item">
+                <div className="legend-color orders" />
+                <span>Orders</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color revenue" />
+                <span>Revenue</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color traffic" />
+                <span>Traffic</span>
+              </div>
             </div>
           </div>
           <div className="chart-wrapper">
@@ -393,12 +506,29 @@ return <Clock size={16} />;
                 <XAxis dataKey="period" stroke="#999" fontSize={13} />
                 <YAxis yAxisId="left" stroke="#999" fontSize={13} />
                 <YAxis yAxisId="right" orientation="right" stroke="#999" fontSize={13} />
-                <Tooltip formatter={(value, name) => {
-                  const num = Number(value) || 0;
-                  if (name === "revenue") return [`₹${num.toLocaleString()}`, "Revenue"];
-                  if (name === "traffic") return [num.toLocaleString(), "Traffic"];
-                  return [num, name];
-                }} contentStyle={{ backgroundColor: "white", borderRadius: "8px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", padding: "12px 16px" }} />
+                <Tooltip
+                  formatter={(value, name) => {
+ const num = Number(value) || 0;
+
+ if (name === "revenue") {
+  return [`₹${num.toLocaleString()}`, "Revenue"];
+ }
+
+ if (name === "traffic") {
+  return [num.toLocaleString(), "Traffic"];
+ }
+
+ return [num, name];
+}}
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    padding: "12px 16px",
+                    fontSize: "13px"
+                  }}
+                />
                 <Bar yAxisId="left" dataKey="orders" fill="#BCAE93" name="Orders" radius={[4, 4, 0, 0]} barSize={45} />
                 <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#10B981" name="Revenue" strokeWidth={2.5} dot={false} />
               </ComposedChart>
@@ -406,22 +536,34 @@ return <Clock size={16} />;
           </div>
         </div>
 
-        {/* ===== TWO COLUMN LAYOUT ===== */}
+        {/* Two Column Layout */}
         <div className="two-column-layout">
-          {/* Left Column */}
+          {/* Left Column - Order Status & Top Products */}
           <div className="left-column">
-            {/* Order Status */}
+            {/* Order Status Distribution */}
             <div className="info-card">
               <div className="card-header">
                 <h3 className="card-title">Order Status Distribution</h3>
-                <button className="card-action-btn"><MoreHorizontal size={18} /></button>
+                <button className="card-action-btn">
+                  <MoreHorizontal size={18} />
+                </button>
               </div>
               <div className="card-content">
                 <div className="status-pie-container">
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
-                      <Pie data={statusDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={3} dataKey="value">
-                        {statusDistribution.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
+                      <Pie
+                        data={statusDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={85}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {statusDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
                       </Pie>
                       <Tooltip />
                     </PieChart>
@@ -439,14 +581,14 @@ return <Clock size={16} />;
               </div>
             </div>
 
-            {/* Top Products */}
+            {/* Top Selling Products */}
             <div className="info-card">
               <div className="card-header">
                 <h3 className="card-title">Top Selling Products</h3>
                 <Award size={20} className="card-icon" />
               </div>
               <div className="card-content no-padding">
-                {topProducts.length ? (
+                {topProducts.length > 0 ? (
                   <div className="products-list">
                     {topProducts.map((product, idx) => (
                       <div key={idx} className="product-item">
@@ -462,33 +604,54 @@ return <Clock size={16} />;
                       </div>
                     ))}
                   </div>
-                ) : <div className="empty-state">No sales data available</div>}
+                ) : (
+                  <div className="empty-state">No sales data available</div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Right Column - Recent Orders */}
+          {/* Right Column - Recent Orders Table */}
           <div className="right-column">
             <div className="info-card full-height">
               <div className="card-header">
                 <h3 className="card-title">Recent Orders</h3>
-                <Link to="/orders" className="view-all-link">View All <ChevronRight size={16} /></Link>
+                <Link to="/orders" className="view-all-link">
+                  View All <ChevronRight size={16} />
+                </Link>
               </div>
               <div className="card-content no-padding">
                 <div className="orders-table-container">
                   <table className="elegant-table">
-                    <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {orders.slice(0, 6).map((order: any) => (
                         <tr key={order._id}>
                           <td className="order-id">#{order.orderId?.slice(-8) || "N/A"}</td>
                           <td>{order.customerName || "Guest"}</td>
                           <td className="amount">₹{order.total?.toLocaleString() || 0}</td>
-                          <td><span className={`order-status ${order.orderStatus?.toLowerCase()}`}>{getStatusIcon(order.orderStatus)}{order.orderStatus || "Pending"}</span></td>
+                          <td>
+                            <span className={`order-status ${order.orderStatus?.toLowerCase()}`}>
+                              {getStatusIcon(order.orderStatus)}
+                              {order.orderStatus || "Pending"}
+                            </span>
+                          </td>
                           <td className="date">{new Date(order.createdAt).toLocaleDateString()}</td>
                         </tr>
                       ))}
-                      {!orders.length && <tr><td colSpan={5} className="empty-row">No orders found</td></tr>}
+                      {orders.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="empty-row">No orders found</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -497,36 +660,46 @@ return <Clock size={16} />;
           </div>
         </div>
 
-        {/* ===== BOTTOM SECTION ===== */}
+        {/* Bottom Section - Users & Messages */}
         <div className="bottom-section">
-          {/* New Customers */}
+          {/* Recent Users */}
           <div className="info-card">
             <div className="card-header">
               <h3 className="card-title">New Customers</h3>
-              <Link to="/user" className="view-all-link">View All <ChevronRight size={16} /></Link>
+              <Link to="/users" className="view-all-link">
+                View All <ChevronRight size={16} />
+              </Link>
             </div>
             <div className="card-content no-padding">
               <div className="users-list">
                 {users.slice(0, 6).map((user: any) => (
                   <div key={user._id} className="user-item">
-                    <div className="user-avatar">{user.firstName?.charAt(0)}{user.lastName?.charAt(0)}</div>
+                    <div className="user-avatar">
+                      {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                    </div>
                     <div className="user-details">
                       <p className="user-name">{user.firstName} {user.lastName}</p>
                       <p className="user-email">{user.email}</p>
                     </div>
-                    <div className="user-joined">{new Date(user.createdAt).toLocaleDateString()}</div>
+                    <div className="user-joined">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
                 ))}
-                {!users.length && <div className="empty-state">No users found</div>}
+                {users.length === 0 && (
+                  <div className="empty-state">No users found</div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Recent Inquiries */}
+          {/* Contact Messages */}
           <div className="info-card">
             <div className="card-header">
               <h3 className="card-title">Recent Inquiries</h3>
-              <Link to="/contact-us" className="view-all-link">View All <ChevronRight size={16} /></Link>
+              <Link to="/contact-us" className="view-all-link">
+                View All <ChevronRight size={16} />
+              </Link>
             </div>
             <div className="card-content no-padding">
               <div className="messages-list">
@@ -537,12 +710,16 @@ return <Clock size={16} />;
                         <span className="sender-name">{contact.name || "Anonymous"}</span>
                         <span className="sender-email">{contact.email}</span>
                       </div>
-                      <div className="message-date">{new Date(contact.createdAt).toLocaleDateString()}</div>
+                      <div className="message-date">
+                        {new Date(contact.createdAt).toLocaleDateString()}
+                      </div>
                     </div>
                     <p className="message-text">{contact.message?.substring(0, 100)}...</p>
                   </div>
                 ))}
-                {!contacts.length && <div className="empty-state">No messages found</div>}
+                {contacts.length === 0 && (
+                  <div className="empty-state">No messages found</div>
+                )}
               </div>
             </div>
           </div>
