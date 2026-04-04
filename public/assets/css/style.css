@@ -13,6 +13,8 @@
     --primary-30: rgba(188, 174, 147, 0.3);
     --primary-50: rgba(188, 174, 147, 0.5);
     --primary-80: rgba(188, 174, 147, 0.8);
+
+
     
   /* Neutral Colors */
   --black: #1a1a1a;
@@ -2062,3 +2064,52 @@ select:focus-visible {
 .text-primary {
   color: var(--primary);
 }
+
+
+/* Add to your global CSS file */
+:root {
+  /* Primary Color */
+  --primary: #BCAE93;
+  --primary-10: rgba(188, 174, 147, 0.1);
+  --primary-15: rgba(188, 174, 147, 0.15);
+  --primary-20: rgba(188, 174, 147, 0.2);
+  --primary-30: rgba(188, 174, 147, 0.3);
+  --primary-50: rgba(188, 174, 147, 0.5);
+  --primary-80: rgba(188, 174, 147, 0.8);
+
+  /* Neutral Colors */
+  --black: #1a1a1a;
+  --white: #ffffff;
+  --gray-light: #f8f9fa;
+  --gray-medium: #e9ecef;
+  --gray-dark: #6c757d;
+}
+
+/* Override Ant Design primary color */
+.ant-btn-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: var(--primary-80) !important;
+  border-color: var(--primary-80) !important;
+}
+
+.ant-tabs-tab-active {
+  color: var(--primary) !important;
+}
+
+.ant-tabs-tab:hover {
+  color: var(--primary-80) !important;
+}
+
+.ant-tabs-ink-bar {
+  background-color: var(--primary) !important;
+}
+
+.ant-avatar {
+  background-color: var(--primary) !important;
+}
+
+

@@ -1,27 +1,20 @@
 /* setting.css */
 
 :root {
-  /* Primary Color */
-  --primary: #BCAE93;
+  --primary-dark: #a5967c;
   --primary-10: rgba(188, 174, 147, 0.1);
   --primary-15: rgba(188, 174, 147, 0.15);
   --primary-20: rgba(188, 174, 147, 0.2);
   --primary-30: rgba(188, 174, 147, 0.3);
   --primary-50: rgba(188, 174, 147, 0.5);
   --primary-80: rgba(188, 174, 147, 0.8);
-  
-  /* Neutral Colors */
+
   --black: #1a1a1a;
   --white: #ffffff;
   --gray-light: #f8f9fa;
   --gray-medium: #e9ecef;
   --gray-dark: #6c757d;
-  
-  /* Status Colors */
-  --red: #ef4444;
-  --red-light: #fee2e2;
-  --green: #22c55e;
-  --green-light: #dcfce7;
+  --gray-border: #e5e7eb;
 }
 
 /* Custom toggle switch */

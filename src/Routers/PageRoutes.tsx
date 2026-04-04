@@ -21,6 +21,7 @@ import RatingPage from "../Pages/Rating";
 import SettingsPage from "../Pages/Settings";
 import Orders from "../Pages/Order";
 import OrderDetails from "../Components/Order/OrderDetail";
+import ProfilePage from "../Pages/Profile/ProfilePage";
 
 
 
@@ -67,8 +68,13 @@ import OrderDetails from "../Components/Order/OrderDetail";
 },
   { 
   path: ROUTES.ORDER_DETAILS,
-  name: "Setting",
+  name: "Order_Details",
   element: <OrderDetails  />
+},
+  { 
+  path: ROUTES.PROFILE.BASE,
+  name: "Profile",
+  element: <ProfilePage  />
 },
 
 

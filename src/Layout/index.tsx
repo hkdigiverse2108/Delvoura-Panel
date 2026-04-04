@@ -15,14 +15,11 @@ const DashboardLayout = () => {
       const width = window.innerWidth;
 
       if (width < 640) {
-        setMobile(true);
-        setCollapsed(true);
+        setMobile(true);  setCollapsed(true);
       } else if (width < 920) {
-        setMobile(false);
-        setCollapsed(true); // icons only
+        setMobile(false);  setCollapsed(true); 
       } else {
-        setMobile(false);
-        setCollapsed(false); // full sidebar
+        setMobile(false);  setCollapsed(false); 
       }
     };
 
@@ -34,12 +31,7 @@ const DashboardLayout = () => {
   return (
     <Layout className="min-h-screen bg-white">
 
-      {/* Desktop + Tablet Sidebar */}
-      {!mobile && (
-        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      )}
-
-      {/* Mobile Drawer Sidebar */}
+      {!mobile && ( <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />  )}
       {mobile && (
         <Drawer
           placement="left"
@@ -55,11 +47,11 @@ const DashboardLayout = () => {
       <Layout>
         <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
 
-        <Content className="main-content">
-          <div className="content-wrapper">
-            <Outlet />
-          </div>
-        </Content>
+       <Content style={{  padding: "24px",   minHeight: "calc(100vh - 64px)", }}>
+       <div style={{maxWidth: "1400px", margin: "0 auto", width: "100%", }}>
+    <Outlet />
+  </div>
+</Content>
       </Layout>
 
     </Layout>

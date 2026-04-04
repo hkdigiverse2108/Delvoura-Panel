@@ -1,63 +1,184 @@
 "use client";
 
 import { Layout, Dropdown, Avatar, Space, Badge } from "antd";
-import { MenuFoldOutlined,  MenuUnfoldOutlined, UserOutlined, LogoutOutlined,  LockOutlined, BellOutlined, SettingOutlined, DownOutlined,} from "@ant-design/icons";
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  LockOutlined,
+  BellOutlined,
+  DownOutlined,
+  UserAddOutlined,
+  StarOutlined,
+} from "@ant-design/icons";
+
 import { useAppDispatch, useAppSelector } from "../../Store/hooks";
 import { setLogout } from "../../Store/Slices/AuthSlice";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Queries } from "../../Api/Queries";
+import ChangePasswordModal from "../../Pages/auth/ChangePasswordModal";
+import "../../../public/assets/css/header.css";
 
 const { Header } = Layout;
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  time: Date;
+  type: "order" | "user" | "review" | "alert";
+  read: boolean;
+  orderId?: string;
+}
+
+// Store read notifications in localStorage to persist across sessions
+const getStoredReadNotifications = (): Set<string> => {
+  const stored = localStorage.getItem('header_read_notifications');
+  return new Set(stored ? JSON.parse(stored) : []);
+};
+
+const saveReadNotification = (id: string) => {
+  const readSet = getStoredReadNotifications();
+  readSet.add(id);
+  localStorage.setItem('header_read_notifications', JSON.stringify(Array.from(readSet)));
+};
 
 interface AppHeaderProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
 }
 
-
-
 const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
 
-  useEffect(() => {
-  const checkSession = () => {
-    const loginTime = localStorage.getItem("loginTime");
+  const [openChangePassword, setOpenChangePassword] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
-    if (loginTime) {
-      const twelveHours = 12 * 60 * 60 * 1000; // 12 hours
-      const currentTime = Date.now();
+  const user = useAppSelector((state: any) => state.auth.user);
 
-      if (currentTime - Number(loginTime) > twelveHours) {
-        dispatch(setLogout());
-        localStorage.removeItem("loginTime");
-        navigate("/login");
+  // Fetch data for notifications
+  const { data: ordersData } = Queries.useGetOrders({ page: 1, limit: 100 });
+  const { data: usersData } = Queries.useGetUsers({ page: 1, limit: 100 });
+  const { data: ratingsData } = Queries.useGetRatings({ page: 1, limit: 100 });
+
+  const orders = ordersData?.data?.order_data || [];
+  const users = usersData?.data?.user_data || [];
+  const ratings = ratingsData?.data?.rating_data || [];
+
+  const fullName = `${user?.firstName} ${user?.lastName || ""}`.trim() || "Admin";
+
+  // Generate notifications from dashboard data
+  const generateNotifications = useCallback(() => {
+    const readSet = getStoredReadNotifications();
+    const newNotifications: Notification[] = [];
+
+    // Add recent orders as notifications
+    orders.slice(0, 5).forEach((order: any) => {
+      const notifId = `order-${order._id}`;
+      if (!readSet.has(notifId)) {
+        newNotifications.push({
+          id: notifId,
+          title: "New Order Received",
+          message: `Order #${order.orderId?.slice(-8)} for ₹${order.total?.toLocaleString() || 0} from ${order.customerName || "Guest"}`,
+          time: new Date(order.createdAt),
+          type: "order",
+          read: false,
+          orderId: order.orderId,
+        });
       }
+    });
+
+    // Add recent users as notifications
+    users.slice(0, 3).forEach((userItem: any) => {
+      const notifId = `user-${userItem._id}`;
+      if (!readSet.has(notifId)) {
+        newNotifications.push({
+          id: notifId,
+          title: "New User Registered",
+          message: `${userItem.firstName} ${userItem.lastName} just joined the platform`,
+          time: new Date(userItem.createdAt),
+          type: "user",
+          read: false,
+        });
+      }
+    });
+
+    // Add recent ratings as notifications
+    ratings.slice(0, 3).forEach((rating: any) => {
+      const notifId = `review-${rating._id}`;
+      if (!readSet.has(notifId)) {
+        newNotifications.push({
+          id: notifId,
+          title: "New Product Review",
+          message: `${rating.starRating}-star rating received for product`,
+          time: new Date(rating.createdAt),
+          type: "review",
+          read: false,
+        });
+      }
+    });
+
+    // Sort by time (newest first)
+    newNotifications.sort((a, b) => b.time.getTime() - a.time.getTime());
+    setNotifications(newNotifications);
+  }, [orders, users, ratings]);
+
+  // Load notifications when data changes
+  useEffect(() => {
+    if (orders.length > 0 || users.length > 0 || ratings.length > 0) {
+      generateNotifications();
+    }
+  }, [orders, users, ratings, generateNotifications]);
+
+  // Close notification dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Mark notification as read
+  const markAsRead = useCallback((id: string) => {
+    saveReadNotification(id);
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  }, []);
+
+  // Mark all as read
+  const markAllAsRead = useCallback(() => {
+    notifications.forEach(notif => {
+      saveReadNotification(notif.id);
+    });
+    setNotifications([]);
+  }, [notifications]);
+
+  const unreadCount = notifications.length;
+
+  const handleLogout = () => {
+    dispatch(setLogout());
+    navigate("/login");
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "order": return <StarOutlined style={{ fontSize: 18 }} />;
+      case "user": return <UserAddOutlined style={{ fontSize: 18 }} />;
+      case "review": return <StarOutlined style={{ fontSize: 18 }} />;
+      default: return <BellOutlined style={{ fontSize: 18 }} />;
     }
   };
 
-  checkSession();
-
-  const interval = setInterval(checkSession, 60000); // check every 1 minute
-
-  return () => clearInterval(interval);
-}, [dispatch, navigate]);
-
-  const user = useAppSelector((state : any) => state.auth.user);
-
-  const fullName =
-    `${user?.firstName} ${user?.lastName  || ""}`.trim() || "Admin";
-
- const handleLogout = () => {
-  localStorage.removeItem("loginTime");
-  dispatch(setLogout());
-  navigate("/login");
-};
   const userMenuItems = [
     {
-      key: "profile",
+      key: "preview",
       label: (
         <div className="header-profile-preview">
           <div className="header-profile-avatar-small">
@@ -74,11 +195,11 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
       disabled: true,
     },
     {
-      key: "profile-settings",
+      key: "profile",
       label: (
         <div className="header-menu-item">
-          <SettingOutlined />
-          <span>Profile Settings</span>
+          <UserOutlined />
+          <span>My Profile</span>
         </div>
       ),
     },
@@ -108,46 +229,101 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
   ];
 
   return (
-    <Header className="admin-header">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="menu-toggle-btn"
-        >
-          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        </button>
-
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Badge count={3} size="small" className="header-badge">
-          <button className="notification-btn">
-            <BellOutlined />
+    <>
+      <Header className="admin-header">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="menu-toggle-btn"
+          >
+            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </button>
-        </Badge>
+        </div>
 
-    <Dropdown
-  menu={{
-    items: userMenuItems,
-    onClick: ({ key }) => {
-      if (key === "logout") handleLogout();
-    },
-  }}
-  placement="bottomRight"
-  trigger={["click"]}
-  getPopupContainer={(triggerNode) => triggerNode.parentElement!}
-> 
-          <Space className="profile-trigger">
-            <Avatar className="profile-avatar" icon={<UserOutlined />} />
-            <div className="profile-info">
-              <p className="profile-name">{fullName}</p>
-              <p className="profile-role">{user?.roles  || "Admin"}</p>
-            </div>
-            <DownOutlined />
-          </Space>
-        </Dropdown>
-      </div>
-    </Header>
+        <div className="flex items-center gap-3">
+          {/* Notification Bell with Dropdown */}
+          <div className="header-notification-wrapper" ref={notificationRef}>
+            <Badge count={unreadCount} size="small" className="header-badge">
+              <button
+                className="notification-btn"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <BellOutlined />
+              </button>
+            </Badge>
+
+            {showNotifications && (
+              <div className="header-notification-panel">
+                <div className="header-notification-header">
+                  <h3>Notifications</h3>
+                  {unreadCount > 0 && (
+                    <button onClick={markAllAsRead} className="mark-all-btn">
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+                <div className="header-notification-list">
+                  {notifications.length === 0 ? (
+                    <div className="empty-notifications">
+                      <BellOutlined style={{ fontSize: 32, color: "#d9d9d9", marginBottom: 12 }} />
+                      <p>All caught up! ✨</p>
+                      <span>No new notifications</span>
+                    </div>
+                  ) : (
+                    notifications.map(notif => (
+                      <div
+                        key={notif.id}
+                        className="header-notification-item"
+                        onClick={() => markAsRead(notif.id)}
+                      >
+                        <div className={`header-notification-icon ${notif.type}`}>
+                          {getNotificationIcon(notif.type)}
+                        </div>
+                        <div className="header-notification-content">
+                          <p className="header-notification-title">{notif.title}</p>
+                          <p className="header-notification-message">{notif.message}</p>
+                          <span className="header-notification-time">
+                            {notif.time.toLocaleDateString()} at {notif.time.toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <div className="unread-dot" />
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Dropdown
+            menu={{
+              items: userMenuItems,
+              onClick: ({ key }) => {
+                if (key === "logout") handleLogout();
+                if (key === "change-password") setOpenChangePassword(true);
+                if (key === "profile") navigate("/profile");
+              }
+            }}
+            placement="bottomRight"
+            trigger={["click"]}
+          >
+            <Space className="profile-trigger">
+              <Avatar className="profile-avatar" icon={<UserOutlined />} />
+              <div className="profile-info">
+                <p className="profile-name">{fullName}</p>
+                <p className="profile-role">{user?.roles || "Admin"}</p>
+              </div>
+              <DownOutlined />
+            </Space>
+          </Dropdown>
+        </div>
+      </Header>
+
+      <ChangePasswordModal
+        open={openChangePassword}
+        onClose={() => setOpenChangePassword(false)}
+      />
+    </>
   );
 };
 

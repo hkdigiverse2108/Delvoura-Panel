@@ -11,6 +11,7 @@ interface Props {
   prefix?: React.ReactNode;
   error?: string;
   type?: string;
+  disabled?: boolean;
 }
 
 const CommonInput = ({
@@ -22,9 +23,10 @@ const CommonInput = ({
   prefix,
   error,
   type = "text",
+  disabled = false,
 }: Props) => {
   return (
-    <div>
+    <div className="w-full">
       <label className="block text-sm font-semibold text-gray-700 mb-2">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -37,7 +39,9 @@ const CommonInput = ({
         size="large"
         prefix={prefix}
         status={error ? "error" : ""}
-        className="rounded-lg    h-12 text-base"
+        disabled={disabled}
+        className="rounded-lg h-12 text-base hover:border-primary focus:border-primary"
+        style={{ borderRadius: 8 }}
       />
 
       {error && (

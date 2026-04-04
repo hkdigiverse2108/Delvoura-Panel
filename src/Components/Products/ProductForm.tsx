@@ -44,16 +44,13 @@ const ProductPreview = ({ form }: { form: any }) => {
   };
 
   const firstCollection = getFirstCollectionName();
-  const lowestPrice = form.variants?.filter((v: any) => v.price).length > 0
-    ? Math.min(...form.variants.filter((v: any) => v.price).map((v: any) => v.price))
-    : null;
 
 
-    const decodeHtml = (html: string) => {
-  const txt = document.createElement("textarea");
-  txt.innerHTML = html;
-  return txt.value;
-};
+  const decodeHtml = (html: string) => {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  };
   return (
     <div className="max-w-md mx-auto bg-white">
       {/* IMAGE */}
@@ -179,23 +176,23 @@ const ProductPreview = ({ form }: { form: any }) => {
           )}
         </div>
 
-       {/* scent story preview */}
-{form.scentStory && (
-  <p className="text-gray-500 text-sm italic">
-    Inspired by {decodeHtml(form.scentStory)
-      .replace(/<[^>]*>/g, "")
-      .substring(0, 60)}
-  </p>
-)}
+        {/* scent story preview */}
+        {form.scentStory && (
+          <p className="text-gray-500 text-sm italic">
+            Inspired by {decodeHtml(form.scentStory)
+              .replace(/<[^>]*>/g, "")
+              .substring(0, 60)}
+          </p>
+        )}
         {/* price */}
         <div>
           <div className="flex items-end gap-3">
             <span className="text-3xl font-bold text-orange-500">
-              ₹{selectedVariant?.price || form.mrp || "0"}
+              ₹{selectedVariant?.price || 0}
             </span>
-            {lowestPrice && lowestPrice < (form.mrp || 0) && (
-              <span className="line-through text-gray-400 text-sm">
-                ₹{form.mrp}
+            {selectedVariant?.mrp && (
+              <span className="line-through">
+                ₹{selectedVariant.mrp}
               </span>
             )}
           </div>
@@ -315,12 +312,11 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
   const [form, setForm] = useState<any>({
     name: "",
     title: "",
-    mrp: undefined,
     gender: "unisex",
     collectionIds: [],
     seasonIds: [],
     scentIds: [],
-    variants: [{ size: "", price: undefined }],
+    variants: [{ size: "", mrp: undefined, price: undefined }],
     ingredients: [""],
     description: "",
     usageTips: "",
@@ -433,12 +429,15 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
     setForm({ ...form, [field]: updated.length ? updated : [""] });
   };
 
-  const updateVariant = (index: number, key: "size" | "price", value: any) => {
+  const updateVariant = (
+    index: number,
+    key: "size" | "price" | "mrp",
+    value: any
+  ) => {
     const updated = [...form.variants];
     updated[index] = { ...updated[index], [key]: value };
     setForm({ ...form, variants: updated });
   };
-
   const addVariant = () => {
     setForm({ ...form, variants: [...form.variants, { size: "", price: undefined }] });
   };
@@ -577,16 +576,7 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
                       placeholder="Enter product title"
                     />
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">MRP</label>
-                      <InputNumber
-                        value={form.mrp}
-                        onChange={(value) => setForm({ ...form, mrp: value })}
-                        placeholder="Enter MRP"
-                        size="large"
-                        className="w-full block rounded-lg border-gray-200 h-12"
-                      />
-                    </div>
+
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
@@ -662,10 +652,41 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
                     </div>
                     <div className="space-y-3">
                       {form.variants.map((variant: any, index: number) => (
-                        <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-3 rounded-xl p-3 bg-gray-50">
-                          <Input value={variant.size} onChange={(e) => updateVariant(index, "size", e.target.value)} placeholder="Size e.g. 50ml" size="large" className="rounded-lg" />
-                          <InputNumber value={variant.price} onChange={(value) => updateVariant(index, "price", value)} placeholder="Price" size="large" className="w-full rounded-lg" />
-                          <button type="button" className="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-100" onClick={() => removeVariant(index)}><Trash2 size={16} /></button>
+                        <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 rounded-xl p-3 bg-gray-50">
+
+                          <Input
+                            value={variant.size}
+                            onChange={(e) =>
+                              updateVariant(index, "size", e.target.value)
+                            }
+                            placeholder="Size e.g. 50ml"
+                          />
+
+                          <InputNumber
+                            value={variant.mrp}
+                            onChange={(value) =>
+                              updateVariant(index, "mrp", value)
+                            }
+                            placeholder="MRP"
+                            className="w-full"
+                          />
+
+                          <InputNumber
+                            value={variant.price}
+                            onChange={(value) =>
+                              updateVariant(index, "price", value)
+                            }
+                            placeholder="Selling Price"
+                            className="w-full"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => removeVariant(index)}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+
                         </div>
                       ))}
                     </div>

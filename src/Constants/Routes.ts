@@ -16,6 +16,12 @@ export const ROUTES = {
     ADD_EDIT: "/user/add-edit",
     PERMISSION_ADD_EDIT: "/user/permission/add-edit",
   },
+
+  PROFILE : {
+    BASE :"/profile"
+  },
+
+  
    PRODUCT: {
     BASE: "/product",
     ADD_EDIT: "/product/add-edit",

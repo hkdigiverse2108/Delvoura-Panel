@@ -2,9 +2,10 @@
 import { KEYS, URL_KEYS } from "../Constants";
 import { Get } from "./Method/Get";
 import { useQueries } from "./ReactQuery/useQueries";
-import type {  BlogListResponse, CollectionListResponse, ContactUsListResponse, InstagramListResponse, MediaListResponse, NewsletterListResponse, OrderListResponse, OrderResponse, ProductListResponse, ProductResponse, RatingListResponse, ScentListResponse, SeasonListResponse,  StaticPageListResponse, TopbarResponse, UserListResponse, UserResponse } from "../Types";
+import type {  BlogListResponse, CollectionListResponse, ContactUsListResponse, InstagramListResponse, IUser, MediaListResponse, NewsletterListResponse, OrderListResponse, OrderResponse, ProductListResponse, ProductResponse, RatingListResponse, ScentListResponse, SeasonListResponse,  StaticPageListResponse, TopbarResponse, UserListResponse, UserResponse } from "../Types";
 import type { ApiResponse, Params } from "../Types/common";
 import type { SettingsResponse } from "../Types/Settings";
+import { useQuery } from "@tanstack/react-query";
 
 
 
@@ -92,6 +93,16 @@ export const Queries =  {
 
 
    // ************ Orders ************
+
+
+
+
+useGetProfile: (id?: string) =>
+  useQuery<ApiResponse<IUser>>({
+    queryKey: [KEYS.PROFILE.GET, id],
+    queryFn: () => Get<ApiResponse<IUser>>(`/user/${id}`),
+    enabled: !!id,
+  }),
 
 useGetOrders: (params?: Params) => useQueries<OrderListResponse>(  [KEYS.ORDER.GET_ALL, params], () => Get(URL_KEYS.ORDER.GET_ALL, params)),
 useGetOrderById: (id?: string) => useQueries<OrderResponse>( [KEYS.ORDER.GET_ONE, id], () => Get(URL_KEYS.ORDER.GET_ONE.replace(":id", id as string)), { enabled: !!id }),

@@ -18,6 +18,12 @@ export const KEYS = {
     DELETE: "DELETE_USER",
   },
 
+  
+PROFILE: {
+  GET: "GET_PROFILE",
+  UPDATE: "UPDATE_PROFILE",
+},
+
     SEASON: {
     GET_ALL: "get_seasons",
     ADD: "add_season",

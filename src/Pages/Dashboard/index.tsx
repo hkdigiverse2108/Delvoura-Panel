@@ -1,40 +1,15 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import {  Package,  ShoppingBag,  Users,  TrendingUp,  Star,  UserPlus,  Bell,  Award,  RefreshCw,  ChevronRight,  CheckCircle,  Clock,  Truck,  XCircle, DollarSign, UserCheck, ArrowUpRight, ArrowDownRight, MoreHorizontal,} from "lucide-react";
-import {  Line,  XAxis,  YAxis, CartesianGrid, Tooltip, ResponsiveContainer,  PieChart,  Pie,  Cell,  Bar, ComposedChart,} from "recharts";
+import { useMemo, useState } from "react";
+import { Package, ShoppingBag, Users, TrendingUp, Star, Award, RefreshCw, ChevronRight, CheckCircle, Clock, Truck, XCircle, DollarSign, UserCheck, ArrowUpRight, ArrowDownRight, MoreHorizontal } from "lucide-react";
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Bar, ComposedChart } from "recharts";
 import { Queries } from "../../Api/Queries";
 import { Link } from "react-router-dom";
 import "../../../public/assets/css/dashboard.css";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  time: Date;
-  type: "order" | "user" | "review" | "alert";
-  read: boolean;
-  orderId?: string;
-}
-
-// Store read notifications in localStorage to persist across sessions
-const getStoredReadNotifications = (): Set<string> => {
-  const stored = localStorage.getItem('read_notifications');
-  return new Set(stored ? JSON.parse(stored) : []);
-};
-
-const saveReadNotification = (id: string) => {
-  const readSet = getStoredReadNotifications();
-  readSet.add(id);
-  localStorage.setItem('read_notifications', JSON.stringify(Array.from(readSet)));
-};
-
 const Dashboard = () => {
   // State
-  const [showNotifications, setShowNotifications] = useState(false);
   const [timeRange, setTimeRange] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const notificationRef = useRef<HTMLDivElement>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Data fetching
@@ -75,102 +50,12 @@ const Dashboard = () => {
     users: { value: totalUsers, change: 15.7, trend: "up" },
   }), [totalOrders, totalRevenue, totalProducts, totalUsers]);
 
-  // Generate notifications - only for items not already read
-  const generateNotifications = useCallback(() => {
-    const readSet = getStoredReadNotifications();
-    const newNotifications: Notification[] = [];
-    
-    // Add recent orders as notifications
-    orders.slice(0, 5).forEach((order: any) => {
-      const notifId = `order-${order._id}`;
-      if (!readSet.has(notifId)) {
-        newNotifications.push({
-          id: notifId,
-          title: "New Order Received",
-          message: `Order #${order.orderId?.slice(-8)} for ₹${order.total} from ${order.customerName || "Guest"}`,
-          time: new Date(order.createdAt),
-          type: "order",
-          read: false,
-          orderId: order.orderId,
-        });
-      }
-    });
-    
-    // Add recent users as notifications
-    users.slice(0, 3).forEach((user: any) => {
-      const notifId = `user-${user._id}`;
-      if (!readSet.has(notifId)) {
-        newNotifications.push({
-          id: notifId,
-          title: "New User Registered",
-          message: `${user.firstName} ${user.lastName} just joined`,
-          time: new Date(user.createdAt),
-          type: "user",
-          read: false,
-        });
-      }
-    });
-    
-    // Add recent ratings as notifications
-    ratings.slice(0, 3).forEach((rating: any) => {
-      const notifId = `review-${rating._id}`;
-      if (!readSet.has(notifId)) {
-        newNotifications.push({
-          id: notifId,
-          title: "New Product Review",
-          message: `${rating.starRating}-star rating received`,
-          time: new Date(rating.createdAt),
-          type: "review",
-          read: false,
-        });
-      }
-    });
-    
-    // Sort by time (newest first)
-    newNotifications.sort((a, b) => b.time.getTime() - a.time.getTime());
-    setNotifications(newNotifications);
-  }, [orders, users, ratings]);
-
-  // Load notifications when data changes
-  useEffect(() => {
-    if (orders.length > 0 || users.length > 0 || ratings.length > 0) {
-      generateNotifications();
-    }
-  }, [orders, users, ratings, generateNotifications]);
-
-  // Close notification dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Mark notification as read - persists to localStorage
-  const markAsRead = useCallback((id: string) => {
-    saveReadNotification(id);
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
-  }, []);
-
-  // Mark all as read
-  const markAllAsRead = useCallback(() => {
-    notifications.forEach(notif => {
-      saveReadNotification(notif.id);
-    });
-    setNotifications([]);
-  }, [notifications]);
-
   // Refresh all data
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([refetchOrders(), refetchUsers()]);
     setIsRefreshing(false);
   };
-
-  const unreadCount = notifications.length;
 
   // Get chart data
   const getChartData = useMemo(() => {
@@ -313,32 +198,18 @@ const Dashboard = () => {
 
   // Stats cards configuration
   const statCards = [
-    {   title: "Total Revenue",   value: `₹${totalRevenue.toLocaleString()}`,  icon: DollarSign,  link: "/orders", change: statsWithChanges.revenue.change, trend: statsWithChanges.revenue.trend, subtitle: "vs last month",},
-    {  title: "Total Orders",  value: totalOrders,  icon: ShoppingBag,  link: "/orders",  change: statsWithChanges.orders.change, trend: statsWithChanges.orders.trend, subtitle: "vs last month", },
-    {   title: "Active Users",   value: totalUsers,  icon: Users,  link: "/user",  change: statsWithChanges.users.change, trend: statsWithChanges.users.trend,  subtitle: "vs last month", },
-    {  title: "Total Products",  value: totalProducts,   icon: Package,   link: "/product", change: statsWithChanges.products.change, trend: statsWithChanges.products.trend,  subtitle: "vs last month",  },
+    { title: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: DollarSign, link: "/orders", change: statsWithChanges.revenue.change, trend: statsWithChanges.revenue.trend, subtitle: "vs last month" },
+    { title: "Total Orders", value: totalOrders, icon: ShoppingBag, link: "/orders", change: statsWithChanges.orders.change, trend: statsWithChanges.orders.trend, subtitle: "vs last month" },
+    { title: "Active Users", value: totalUsers, icon: Users, link: "/user", change: statsWithChanges.users.change, trend: statsWithChanges.users.trend, subtitle: "vs last month" },
+    { title: "Total Products", value: totalProducts, icon: Package, link: "/product", change: statsWithChanges.products.change, trend: statsWithChanges.products.trend, subtitle: "vs last month" },
   ];
 
- const quickStats = [
-{
- label: "Avg Order Value",
- value: `₹${(totalRevenue / totalOrders || 0).toFixed(0)}`,
- change: "+5.2%",
- icon: TrendingUp,
-},
-{
- label: "Conversion Rate",
- value: "3.24%",
- change: "+0.8%",
- icon: UserCheck,
-},
-{
- label: "Customer Satisfaction",
- value: `${averageRating}/5`,
- change: "+0.3",
- icon: Star,
-},
-];
+  const quickStats = [
+    { label: "Avg Order Value", value: `₹${(totalRevenue / totalOrders || 0).toFixed(0)}`, change: "+5.2%", icon: TrendingUp },
+    { label: "Conversion Rate", value: "3.24%", change: "+0.8%", icon: UserCheck },
+    { label: "Customer Satisfaction", value: `${averageRating}/5`, change: "+0.3", icon: Star },
+  ];
+
   return (
     <div className="elegant-dashboard">
       <div className="dashboard-content">
@@ -349,53 +220,6 @@ const Dashboard = () => {
             <p className="dashboard-subtitle">Welcome back! Here's what's happening with your store today.</p>
           </div>
           <div className="header-actions">
-          
-            <div className="notification-wrapper" ref={notificationRef}>
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="notification-btn"
-              >
-                <Bell size={20} />
-                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-              </button>
-              {showNotifications && (
-                <div className="notification-panel">
-                  <div className="notification-header">
-                    <h3>Notifications</h3>
-                    {unreadCount > 0 && (
-                      <button onClick={markAllAsRead} className="mark-all-btn">Mark all read</button>
-                    )}
-                  </div>
-                  <div className="notification-list">
-                    {notifications.length === 0 ? (
-                      <div className="empty-notifications">All caught up! ✨</div>
-                    ) : (
-                      notifications.map(notif => (
-                        <div
-                          key={notif.id}
-                          className="notification-item"
-                          onClick={() => markAsRead(notif.id)}
-                        >
-                          <div className="notification-icon">
-                            {notif.type === "order" && <ShoppingBag size={18} />}
-                            {notif.type === "user" && <UserPlus size={18} />}
-                            {notif.type === "review" && <Star size={18} />}
-                          </div>
-                          <div className="notification-content">
-                            <p className="notification-title">{notif.title}</p>
-                            <p className="notification-message">{notif.message}</p>
-                            <span className="notification-time">
-                              {notif.time.toLocaleDateString()} at {notif.time.toLocaleTimeString()}
-                            </span>
-                          </div>
-                          <div className="unread-dot" />
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
             <button className="refresh-btn" onClick={handleRefresh} disabled={isRefreshing}>
               <RefreshCw size={18} className={isRefreshing ? 'spinning' : ''} />
             </button>
@@ -508,18 +332,15 @@ const Dashboard = () => {
                 <YAxis yAxisId="right" orientation="right" stroke="#999" fontSize={13} />
                 <Tooltip
                   formatter={(value, name) => {
- const num = Number(value) || 0;
-
- if (name === "revenue") {
-  return [`₹${num.toLocaleString()}`, "Revenue"];
- }
-
- if (name === "traffic") {
-  return [num.toLocaleString(), "Traffic"];
- }
-
- return [num, name];
-}}
+                    const num = Number(value) || 0;
+                    if (name === "revenue") {
+                      return [`₹${num.toLocaleString()}`, "Revenue"];
+                    }
+                    if (name === "traffic") {
+                      return [num.toLocaleString(), "Traffic"];
+                    }
+                    return [num, name];
+                  }}
                   contentStyle={{
                     backgroundColor: "white",
                     border: "none",

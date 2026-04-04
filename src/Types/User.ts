@@ -15,6 +15,19 @@ export type UserType = {
   
 };
 
+export interface IUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  roles?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  contact?: {
+    countryCode?: string;
+    phoneNo?: number;
+  };
+}
 export type UserPayload = {
   firstName: string;
   lastName: string;

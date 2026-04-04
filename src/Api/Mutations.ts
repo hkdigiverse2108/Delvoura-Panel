@@ -96,6 +96,12 @@ useAddEditTopbar: () => { const queryClient = useQueryClient();  return useMutat
 // ************ Settings ************
 useAddEditSettings: () => useMutations( [KEYS.SETTINGS.ADD_EDIT], (input) => Post(URL_KEYS.SETTINGS.ADD_EDIT, input), { invalidateQueryKeys: [[KEYS.SETTINGS.GET]] }),
 
+
+useUpdateProfile: () =>
+  useMutations(
+    [KEYS.PROFILE.UPDATE],
+    (input) => Put(URL_KEYS.PROFILE.UPDATE, input)
+  ),
 };
 
 

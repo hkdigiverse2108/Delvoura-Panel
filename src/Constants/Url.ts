@@ -13,6 +13,10 @@ export const URL_KEYS = {
     DELETE: "/user/:id",
   },
 
+PROFILE: {
+  GET: "/user",
+  UPDATE: "/user/edit",
+},
   SEASON: {
     GET_ALL: "/season/",
     ADD: "/season/add",
