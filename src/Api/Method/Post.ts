@@ -44,13 +44,18 @@ export async function Post<TInput, TResponse>(
     }
 
     return null as TResponse;
-  } catch (error) {
-    const axiosError = error as AxiosError<{ message?: string }>;
-    const message =
-      axiosError.response?.data?.message ||
-      axiosError.message ||
-      "Something went wrong";
+  }catch (error) {
+  const axiosError = error as AxiosError<{ message?: string }>;
+  const message =
+    axiosError.response?.data?.message ||
+    axiosError.message ||
+    "Something went wrong";
 
-    throw new Error(message);
-  }
+  if (axiosError.response?.status === HTTP_STATUS.UNAUTHORIZED) {
+  localStorage.removeItem("token"); // token clear
+  window.location.href = "/login"; // redirect login page
+  return Promise.reject(new Error("Session expired, please login again"));
+}
+  throw new Error(message);
+}
 }

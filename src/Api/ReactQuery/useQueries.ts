@@ -13,3 +13,4 @@ export function useQueries<T>( queryKey: QueryKey, callback: () => Promise<T>, o
     ...options,
   });
 }
+  

@@ -36,6 +36,12 @@ export async function Put<TInput, TResponse>(
       axiosError.message ||
       "Something went wrong";
 
+        if (axiosError.response?.status === HTTP_STATUS.UNAUTHORIZED) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+      return Promise.reject(
+        new Error("Session expired, please login again")
+      );}
     throw new Error(message);
   }
 }

@@ -38,10 +38,11 @@ export async function Get<T>(
       axiosError.response?.data?.message ||
       axiosError.message ||
       "Something went wrong";
-
-    if (axiosError.response?.status === HTTP_STATUS.UNAUTHORIZED) {
-      throw new Error(message);
-    }
+if (axiosError.response?.status === HTTP_STATUS.UNAUTHORIZED) {
+  localStorage.removeItem("token"); // token clear
+  window.location.href = "/login"; // redirect login page
+  return Promise.reject(new Error("Session expired, please login again"));
+}
 
     throw new Error(message);
   }
