@@ -457,7 +457,7 @@ const Dashboard = () => {
                       {orders.slice(0, 6).map((order: any) => (
                         <tr key={order._id}>
                           <td className="order-id">#{order.orderId?.slice(-8) || "N/A"}</td>
-                          <td>{order.customerName || "Guest"}</td>
+                        <td>{order.firstName ? `${order.firstName} ${order.lastName || ""}` : "Guest"}</td>
                           <td className="amount">₹{order.total?.toLocaleString() || 0}</td>
                           <td>
                             <span className={`order-status ${order.orderStatus?.toLowerCase()}`}>

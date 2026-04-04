@@ -39,22 +39,34 @@ const OrderTable = ({
     );
   };
 
-  const getPaymentBadge = (status: string) => {
-    const paymentConfig: Record<string, { color: string; bg: string; label: string }> = {
-      paid: { color: "text-green-600", bg: "bg-green-50", label: "Paid" },
-      pending: { color: "text-yellow-600", bg: "bg-yellow-50", label: "Pending" },
-      failed: { color: "text-red-600", bg: "bg-red-50", label: "Failed" },
-      refunded: { color: "text-gray-600", bg: "bg-gray-50", label: "Refunded" },
-    };
-    
-    const config = paymentConfig[status?.toLowerCase()] || paymentConfig.pending;
-    
-    return (
-      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.color}`}>
-        {config.label}
-      </span>
-    );
+const normalizePaymentStatus = (status: string) => {
+  const s = status?.toLowerCase();
+
+  if (s === "completed") return "paid";   // PhonePe
+  if (s === "paid") return "paid";        // Razorpay
+  if (s === "failed") return "failed";
+  if (s === "pending") return "pending";
+
+  return "pending";
+};
+
+const getPaymentBadge = (status: string) => {
+  const normalized = normalizePaymentStatus(status);
+
+  const paymentConfig: Record<string, { color: string; bg: string; label: string }> = {
+    paid: { color: "text-green-600", bg: "bg-green-50", label: "Paid" },
+    pending: { color: "text-yellow-600", bg: "bg-yellow-50", label: "Pending" },
+    failed: { color: "text-red-600", bg: "bg-red-50", label: "Failed" },
   };
+
+  const config = paymentConfig[normalized] || paymentConfig.pending;
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.color}`}>
+      {config.label}
+    </span>
+  );
+};
 
   const columns = [
     {
