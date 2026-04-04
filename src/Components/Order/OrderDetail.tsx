@@ -234,7 +234,7 @@ const OrderDetails = () => {
                                 <Tag size={16} className="text-primary" />
                               </div>
                               <span className="text-sm font-medium text-gray-900">
-                             {item.product?.name || "Unknown Product"}
+                             {item.productName || "Unknown Product"}
                               </span>
                             </div>
                           </td>

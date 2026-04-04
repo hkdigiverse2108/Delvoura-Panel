@@ -151,26 +151,34 @@ const Dashboard = () => {
   }, [orders, timeRange]);
 
   // Top selling products
-  const topProducts = useMemo(() => {
-    const productSales: { [key: string]: { name: string; quantity: number; revenue: number; growth?: number } } = {};
-    orders.forEach((order: any) => {
-      if (order.items) {
-        order.items.forEach((item: any) => {
-          const productId = item.productId?._id || item.productId;
-          const productName = item.productId?.name || item.name || "Unknown Product";
-          const quantity = item.quantity || 1;
-          const price = item.price || 0;
-          if (!productSales[productId]) {
-            productSales[productId] = { name: productName, quantity: 0, revenue: 0, growth: Math.random() * 20 + 5 };
-          }
-          productSales[productId].quantity += quantity;
-          productSales[productId].revenue += price * quantity;
-        });
-      }
-    });
-    return Object.values(productSales).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
-  }, [orders]);
+const topProducts = useMemo(() => {
+  const productSales: any = {};
 
+  orders.forEach((order: any) => {
+    order.items?.forEach((item: any) => {
+      const productId = item.productId;
+      const productName = item.productName || "Unknown Product";
+      const quantity = item.quantity || 1;
+      const price = item.price || 0;
+
+      if (!productSales[productId]) {
+        productSales[productId] = {
+          productName,
+          quantity: 0,
+          revenue: 0,
+          growth: Math.random() * 20 + 5,
+        };
+      }
+
+      productSales[productId].quantity += quantity;
+      productSales[productId].revenue += price * quantity;
+    });
+  });
+
+  return Object.values(productSales)
+    .sort((a: any, b: any) => b.revenue - a.revenue)
+    .slice(0, 5);
+}, [orders]);
   // Status distribution
   const statusDistribution = useMemo(() => {
     const statusMap: { [key: string]: number } = { pending: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0 };
@@ -411,12 +419,14 @@ const Dashboard = () => {
               <div className="card-content no-padding">
                 {topProducts.length > 0 ? (
                   <div className="products-list">
-                    {topProducts.map((product, idx) => (
+                    {topProducts.map((product :any, idx) => (
                       <div key={idx} className="product-item">
                         <div className="product-rank">{idx + 1}</div>
                         <div className="product-info">
-                          <p className="product-name">{product.name}</p>
-                          <p className="product-meta">{product.quantity} units sold</p>
+                         <p className="product-name">
+  {product.productName || "Unknown Product"}
+</p>
+<p className="product-meta">{product.quantity} units sold</p>
                         </div>
                         <div className="product-revenue">
                           ₹{product.revenue.toLocaleString()}
