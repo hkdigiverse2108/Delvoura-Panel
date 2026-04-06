@@ -23,7 +23,6 @@ const Product = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, limit: 10 });
   const [statusToggle, setStatusToggle] = useState(true);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<any>({
     search: "",
@@ -67,6 +66,7 @@ const Product = () => {
   const { data: collectionData } = Queries.useGetCollections();
   const { data: seasonData } = Queries.useGetSeasons();
   const { data: scentData } = Queries.useGetScents();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const products = data?.data?.product_data || [];
   const total = data?.data?.totalData || 0;
@@ -110,6 +110,7 @@ const Product = () => {
       .map((v: any) => ({
         size: typeof v === "string" ? v : v.size,
         price: typeof v === "object" ? v.price || 0 : 0,
+            mrp: typeof v === "object" ? v.mrp || 0 : 0,
       }))
       .filter((v: any) => v.size),
     ingredients: item.ingredients || [],
@@ -139,6 +140,7 @@ const Product = () => {
           .map((v: any) => ({
             size: typeof v === "string" ? v.trim() : v.size?.trim(),
             price: typeof v === "object" ? v.price || 0 : 0,
+                mrp: typeof v === "object" ? v.mrp || 0 : 0,
           }))
           .filter((v: any) => v.size),
         collectionIds: (values.collectionIds || []).map((v: any) => v._id || v),
@@ -175,16 +177,17 @@ const Product = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    try {
-      await deleteProduct.mutateAsync(deleteId);
-      setDeleteId(null);
-      refetch();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+const handleDelete = async () => {
+  if (!deleteId) return;
+
+  try {
+    await deleteProduct.mutateAsync(deleteId);
+    setDeleteId(null);
+    refetch();
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const handleToggleStatus = async (item: any) => {
     try {
@@ -412,19 +415,18 @@ const Product = () => {
         }}
       />
 
-      <ProductTable
-        data={filteredProducts}
-        loading={isLoading}
-        page={pagination.page}
-        limit={pagination.limit}
-        onEdit={(item: any) => {
-          setEditData(item);
-          setMode("form");
-        }}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggleStatus}
-      />
-
+    <ProductTable
+  data={filteredProducts}
+  loading={isLoading}
+  page={pagination.page}
+  limit={pagination.limit}
+  onEdit={(item: any) => {
+    setEditData(item);
+    setMode("form");
+  }}
+  onDelete={(id: string) => setDeleteId(id)}
+  onToggleStatus={handleToggleStatus}
+/>
       <ConfirmModal
         open={!!deleteId}
         onClose={() => setDeleteId(null)}

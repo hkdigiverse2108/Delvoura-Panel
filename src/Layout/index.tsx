@@ -47,7 +47,7 @@ const DashboardLayout = () => {
       <Layout>
         <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
 
-       <Content style={{  padding: "24px",   minHeight: "calc(100vh - 64px)", }}>
+       <Content style={{  padding: "24px 0px",   minHeight: "calc(100vh - 64px)", }}>
        <div style={{maxWidth: "1400px", margin: "0 auto", width: "100%", }}>
     <Outlet />
   </div>

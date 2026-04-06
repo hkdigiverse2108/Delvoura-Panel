@@ -41,12 +41,25 @@ const NewsletterTable = ({
     },
 
     
-    {
-      title: "Created",
-      key: "createdAt",
-      render: (item: any) =>
-        dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A"),
-    },
+     {
+         title: "Created ",
+         key: "createdUpdatedAt",
+         width: 280,
+         render: (item: any) => (
+           <div className="date-group-cell">
+             <div className="date-line">
+               <span className="date-label">Created:</span>
+               <span className="date-value">
+                 {item.createdAt
+                   ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
+                   : "-"}
+               </span>
+             </div>
+   
+            
+           </div>
+         ),
+       },
 
     {
       title: "Actions",

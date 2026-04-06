@@ -141,20 +141,27 @@ const getPaymentBadge = (status: string) => {
       key: "orderStatus",
       render: (item: any) => getStatusBadge(item.orderStatus),
     },
+
     {
-      title: "Created",
-      key: "createdAt",
+      title: "Created ",
+      key: "createdUpdatedAt",
+      width: 280,
       render: (item: any) => (
-        <div className="flex flex-col">
-          <span className="text-sm text-gray-700">
-            {item.createdAt ? dayjs(item.createdAt).format("DD MMM YYYY") : "-"}
-          </span>
-          <span className="text-xs text-gray-400">
-            {item.createdAt ? dayjs(item.createdAt).format("hh:mm A") : ""}
-          </span>
+        <div className="date-group-cell">
+          <div className="date-line">
+            <span className="date-label">Created:</span>
+            <span className="date-value">
+              {item.createdAt
+                ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
+                : "-"}
+            </span>
+          </div>
+
+         
         </div>
       ),
     },
+
     {
       title: "Actions",
       key: "actions",

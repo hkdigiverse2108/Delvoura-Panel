@@ -46,16 +46,31 @@ const BlogTable = ({
           </div>
         ),
     },
-    {
-      title: "Title",
-      key: "title",
-      render: (item: any) => <span className="font-medium">{item.title}</span>,
-    },
+  {
+  title: "Title",
+  key: "title",
+  render: (item: any) => (
+    <span className="font-medium block max-w-[200px] truncate" title={item.title}>
+      {item.title}
+    </span>
+  ),
+},
+
 {
   title: "Description",
   key: "description",
-  dataIndex: "description",
-}, {
+  render: (item: any) => {
+    const plainText =
+      item.content?.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ") || "-";
+
+    return (
+      <span className="block max-w-[300px] truncate" title={plainText}>
+        {plainText}
+      </span>
+    );
+  },
+},
+{
       title: "Created / Updated",
       key: "createdUpdatedAt",
       width: 280,

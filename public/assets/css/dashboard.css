@@ -846,3 +846,383 @@
         }
       
         
+
+        /* Base styles for two column layout */
+.two-column-layout {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.left-column {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.right-column {
+  flex: 2;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 1024px) {
+  .two-column-layout {
+    gap: 1rem;
+    padding: 0.875rem;
+  }
+  
+  .left-column {
+    flex: 1.1;
+  }
+  
+  .right-column {
+    flex: 1.9;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .two-column-layout {
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0.75rem;
+  }
+  
+  .left-column {
+    flex: auto;
+    gap: 1.25rem;
+  }
+  
+  .right-column {
+    flex: auto;
+  }
+  
+  /* Adjust pie chart size */
+  .status-pie-container {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  /* Adjust product items */
+  .product-item {
+    padding: 0.875rem !important;
+  }
+  
+  .product-name {
+    font-size: 0.875rem !important;
+  }
+  
+  .product-meta {
+    font-size: 0.75rem !important;
+  }
+  
+  .product-revenue {
+    font-size: 0.875rem !important;
+  }
+  
+  .product-growth {
+    font-size: 0.7rem !important;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .two-column-layout {
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+  
+  /* Table horizontal scroll for small screens */
+  .orders-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .elegant-table {
+    min-width: 500px;
+  }
+  
+  .elegant-table th,
+  .elegant-table td {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  /* Adjust legend layout */
+  .status-legend {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+  
+  .status-legend-item {
+    margin-right: 0 !important;
+    padding: 0.25rem !important;
+  }
+  
+  /* Card adjustments */
+  .info-card {
+    margin: 0 !important;
+  }
+  
+  .card-title {
+    font-size: 1rem !important;
+  }
+  
+  .view-all-link {
+    font-size: 0.75rem !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .two-column-layout {
+    gap: 0.875rem;
+    padding: 0.5rem;
+  }
+  
+  .left-column {
+    gap: 0.875rem;
+  }
+  
+  /* Stack legend items vertically */
+  .status-legend {
+    grid-template-columns: 1fr !important;
+    gap: 0.375rem !important;
+  }
+  
+  .status-legend-item {
+    padding: 0.375rem !important;
+  }
+  
+  .status-name {
+    font-size: 0.8125rem !important;
+  }
+  
+  .status-count {
+    font-size: 0.8125rem !important;
+  }
+  
+  /* Adjust product layout */
+  .product-item {
+    gap: 0.5rem !important;
+  }
+  
+  .product-rank {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .product-info {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .product-revenue {
+    width: 100% !important;
+    margin-left: 36px !important;
+    padding-top: 0.25rem;
+  }
+  
+  .product-growth {
+    margin-left: 0.5rem !important;
+  }
+  
+  /* Adjust pie chart container */
+  .status-pie-container {
+    max-width: 250px;
+  }
+  
+  /* Table adjustments */
+  .elegant-table {
+    min-width: 450px;
+  }
+  
+  .elegant-table th,
+  .elegant-table td {
+    padding: 0.625rem 0.375rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .order-status {
+    font-size: 0.7rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  .card-header {
+    padding: 0.875rem !important;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  .two-column-layout {
+    gap: 0.75rem;
+    padding: 0.375rem;
+  }
+  
+  .left-column {
+    gap: 0.75rem;
+  }
+  
+  /* Extreme small screen adjustments */
+  .card-header {
+    padding: 0.75rem !important;
+  }
+  
+  .card-title {
+    font-size: 0.875rem !important;
+  }
+  
+  .card-action-btn,
+  .card-icon {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  
+  /* Pie chart adjustments */
+  .status-pie-container {
+    max-width: 200px;
+    height: 180px !important;
+  }
+  
+  /* Legend adjustments */
+  .status-legend {
+    gap: 0.25rem !important;
+  }
+  
+  .status-legend-item {
+    padding: 0.25rem !important;
+  }
+  
+  .status-dot {
+    width: 8px !important;
+    height: 8px !important;
+  }
+  
+  .status-name {
+    font-size: 0.75rem !important;
+  }
+  
+  .status-count {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Product adjustments */
+  .product-item {
+    padding: 0.625rem !important;
+  }
+  
+  .product-rank {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .product-name {
+    font-size: 0.75rem !important;
+  }
+  
+  .product-meta {
+    font-size: 0.65rem !important;
+  }
+  
+  .product-revenue {
+    font-size: 0.75rem !important;
+    margin-left: 32px !important;
+  }
+  
+  .product-growth {
+    font-size: 0.6rem !important;
+    padding: 0.125rem 0.25rem !important;
+  }
+  
+  /* Table adjustments */
+  .orders-table-container {
+    overflow-x: auto;
+  }
+  
+  .elegant-table {
+    min-width: 400px;
+  }
+  
+  .elegant-table th,
+  .elegant-table td {
+    padding: 0.5rem 0.25rem !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .order-id {
+    font-size: 0.65rem !important;
+  }
+  
+  .amount {
+    font-size: 0.7rem !important;
+  }
+  
+  .date {
+    font-size: 0.65rem !important;
+  }
+  
+  .order-status {
+    font-size: 0.65rem !important;
+    padding: 0.2rem 0.375rem !important;
+    white-space: nowrap;
+  }
+  
+  .empty-row {
+    padding: 1rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .empty-state {
+    padding: 1.5rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .view-all-link {
+    font-size: 0.7rem !important;
+  }
+}
+
+/* Optional: Add smooth transitions */
+.two-column-layout,
+.left-column,
+.right-column,
+.info-card,
+.product-item,
+.status-legend-item {
+  transition: all 0.3s ease;
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 768px) {
+  .product-item,
+  .status-legend-item,
+  .card-action-btn,
+  .view-all-link {
+    cursor: pointer;
+  }
+  
+  .card-action-btn {
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Optional: Add loading skeleton styles */
+.skeleton-loader {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

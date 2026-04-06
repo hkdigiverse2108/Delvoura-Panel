@@ -10,7 +10,7 @@ export type SocialMediaLinks = {
 export type Settings = {
   _id?: string;
 
-  logo?: string;
+  logo: string | null;
 
   isRazorpay?: boolean;
   razorpayApiKey?: string;
