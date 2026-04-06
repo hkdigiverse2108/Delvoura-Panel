@@ -8,6 +8,7 @@ import {
   CommonPageHeaderForm,
 } from "../common/commonForm";
 import { Select } from "antd";
+import { SingleImageField } from "../common/uploads";
 
 const InstagramForm = ({ onBack, onSubmit, initialValues }: any) => {
   const [form, setForm] = useState({
@@ -19,6 +20,7 @@ const InstagramForm = ({ onBack, onSubmit, initialValues }: any) => {
 
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const [imageSource, setImageSource] = useState<"upload" | "url">("upload");
 
   const isEdit = !!initialValues;
 
@@ -95,19 +97,51 @@ const InstagramForm = ({ onBack, onSubmit, initialValues }: any) => {
       </div>
 
         {/* IMAGE URL */}
-        {form.type === "img" && (
-          <CommonInput  
-            label="Image URL" 
-            required
-            value={form.imageUrl}
-            onChange={(val) => {
-              setForm({ ...form, imageUrl: val });
-              setErrors((p: any) => ({ ...p, imageUrl: "" }));
-            }}
-            placeholder="https://example.com/image.jpg"
-            error={errors.imageUrl}
-          />
-        )}
+   {form.type === "img" && (
+  <div className="space-y-4">
+
+    {/* IMAGE SOURCE SELECT */}
+    <div>
+       <Select 
+      className="w-full h-12 "
+      value={imageSource}
+      onChange={(value) => setImageSource(value)}
+      options={[
+        { label: "Upload Image", value: "upload" },
+        { label: "Image URL", value: "url" },
+      ]}
+    />
+    </div>
+
+    {/* UPLOAD IMAGE */}
+    {imageSource === "upload" && (
+    <SingleImageField
+  label="Instagram Image"
+  variant="banner"
+  value={form.imageUrl}
+  onChange={(url) => {
+    setForm({ ...form, imageUrl: url });
+    setErrors((p: any) => ({ ...p, imageUrl: "" }));
+  }}
+/>
+    )}
+
+    {/* IMAGE URL */}
+    {imageSource === "url" && (
+      <CommonInput
+        label="Image URL"
+        required
+        value={form.imageUrl}
+        onChange={(val) => {
+          setForm({ ...form, imageUrl: val });
+          setErrors((p: any) => ({ ...p, imageUrl: "" }));
+        }}
+        placeholder="https://example.com/image.jpg"
+        error={errors.imageUrl}
+      />
+    )}
+  </div>
+)}
 
         {/* VIDEO URL */}
         {form.type === "video" && (

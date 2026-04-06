@@ -186,16 +186,17 @@ const ProductPreview = ({ form }: { form: any }) => {
         )}
         {/* price */}
         <div>
-          <div className="flex items-end gap-3">
-            <span className="text-3xl font-bold text-orange-500">
-              ₹{selectedVariant?.price || 0}
-            </span>
-            {selectedVariant?.mrp && (
-              <span className="line-through">
-                ₹{selectedVariant.mrp}
-              </span>
-            )}
-          </div>
+        <div className="flex items-end gap-3">
+  <span className="text-3xl font-bold text-orange-500">
+    ₹{selectedVariant?.price || 0}
+  </span>
+
+  {selectedVariant?.mrp && (
+    <span className="text-gray-400 line-through text-lg">
+      ₹{selectedVariant.mrp}
+    </span>
+  )}
+</div>
           <p className="text-xs text-gray-400 mt-0.5">
             Inclusive of all taxes
           </p>
@@ -364,56 +365,62 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
     [scentData]
   );
 
-  useEffect(() => {
-    if (!initialValues) return;
+ useEffect(() => {
+  if (!initialValues) return;
 
-    const images = Array.isArray(initialValues.images) && initialValues.images.length
-      ? initialValues.images
-      : [];
+  const normalizeIds = (arr: any[] = []) =>
+    arr.map((item: any) => item?._id || item);
 
-    let collectionIds = [];
-    if (initialValues.collectionIds) {
-      collectionIds = initialValues.collectionIds.map((item: any) => item._id || item);
-    }
+  setForm({
+    name: initialValues?.name ?? "",
+    title: initialValues?.title ?? "",
+    gender: initialValues?.gender ?? "unisex",
 
-    let seasonIds = [];
-    if (initialValues.seasonIds) {
-      seasonIds = initialValues.seasonIds.map((item: any) => item._id || item);
-    }
+    collectionIds: normalizeIds(initialValues?.collectionIds),
+    seasonIds: normalizeIds(initialValues?.seasonIds),
+    scentIds: normalizeIds(initialValues?.scentIds),
 
-    let scentIds = [];
-    if (initialValues.scentIds) {
-      scentIds = initialValues.scentIds.map((item: any) => item._id || item);
-    }
+   variants: initialValues.variants?.length > 0
+  ? initialValues.variants.map((v: any) => ({
+      size: v.size || "",
+      price: v.price,
+      mrp: v.mrp
+    }))
+        : [{ size: "", mrp: undefined, price: undefined }],
 
-    setForm({
-      name: initialValues.name || "",
-      title: initialValues.title || "",
-      mrp: initialValues.mrp,
-      gender: initialValues.gender || "unisex",
-      collectionIds: collectionIds,
-      seasonIds: seasonIds,
-      scentIds: scentIds,
-      variants: initialValues.variants?.length > 0
-        ? initialValues.variants.map((v: any) => ({ size: v.size || "", price: v.price }))
-        : [{ size: "", price: undefined }],
-      ingredients: initialValues.ingredients?.length > 0 ? initialValues.ingredients : [""],
-      description: initialValues.description || "",
-      usageTips: initialValues.usageTips || "",
-      scentStory: initialValues.scentStory || "",
-      metaTitle: initialValues.metaTitle || "",
-      metaDescription: initialValues.metaDescription || "",
-      metaKeywords: initialValues.metaKeywords?.length > 0 ? initialValues.metaKeywords : [""],
-      slug: initialValues.slug || "",
-      brandManufacturerInfo: initialValues.brandManufacturerInfo || "",
-      isTrending: initialValues.isTrending ?? false,
-      isFeatured: initialValues.isFeatured ?? false,
-      isActive: initialValues.isActive ?? true,
-      coverimage: initialValues.coverimage || "",
-      images: images,
-    });
-  }, [initialValues]);
+    ingredients:
+      initialValues?.ingredients?.length
+        ? initialValues.ingredients
+        : [""],
 
+    description: initialValues?.description ?? "",
+    usageTips: initialValues?.usageTips ?? "",
+    scentStory: initialValues?.scentStory ?? "",
+
+    metaTitle: initialValues?.metaTitle ?? "",
+    metaDescription: initialValues?.metaDescription ?? "",
+    metaKeywords:
+      initialValues?.metaKeywords?.length
+        ? initialValues.metaKeywords
+        : [""],
+
+    slug: initialValues?.slug ?? "",
+
+    brandManufacturerInfo:
+      initialValues?.brandManufacturerInfo ?? "",
+
+    isTrending: initialValues?.isTrending ?? false,
+    isFeatured: initialValues?.isFeatured ?? false,
+    isActive: initialValues?.isActive ?? true,
+
+    coverimage: initialValues?.coverimage ?? "",
+
+    images:
+      Array.isArray(initialValues?.images)
+        ? initialValues.images
+        : [],
+  });
+}, [initialValues]);
   const updateArrayField = (field: string, index: number, value: string) => {
     const updated = [...form[field]];
     updated[index] = value;

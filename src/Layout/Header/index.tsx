@@ -20,6 +20,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Queries } from "../../Api/Queries";
 import ChangePasswordModal from "../../Pages/auth/ChangePasswordModal";
 import "../../../public/assets/css/header.css";
+import { io, Socket } from "socket.io-client";
 
 const { Header } = Layout;
 
@@ -61,6 +62,9 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
 
   const user = useAppSelector((state: any) => state.auth.user);
 
+  // Socket ref
+  const socketRef = useRef<Socket | null>(null);
+
   // Fetch data for notifications
   const { data: ordersData } = Queries.useGetOrders({ page: 1, limit: 100 });
   const { data: usersData } = Queries.useGetUsers({ page: 1, limit: 100 });
@@ -72,19 +76,19 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
 
   const fullName = `${user?.firstName} ${user?.lastName || ""}`.trim() || "Admin";
 
-  // Generate notifications from dashboard data
+  // Generate notifications from fetched data
   const generateNotifications = useCallback(() => {
     const readSet = getStoredReadNotifications();
     const newNotifications: Notification[] = [];
 
-    // Add recent orders as notifications
+    // Recent Orders
     orders.slice(0, 5).forEach((order: any) => {
-      const notifId = `order-${order._id}`;
+      const notifId = `order-${order.orderId}`;
       if (!readSet.has(notifId)) {
         newNotifications.push({
           id: notifId,
           title: "New Order Received",
-          message: `Order #${order.orderId?.slice(-8)} for ₹${order.total?.toLocaleString() || 0} from ${order.customerName || "Guest"}`,
+          message: `Order #${order.orderId} for ₹${order.total?.toLocaleString() || 0} from ${order.customerName || "Guest"}`,
           time: new Date(order.createdAt),
           type: "order",
           read: false,
@@ -93,7 +97,7 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
       }
     });
 
-    // Add recent users as notifications
+    // Recent Users
     users.slice(0, 3).forEach((userItem: any) => {
       const notifId = `user-${userItem._id}`;
       if (!readSet.has(notifId)) {
@@ -108,7 +112,7 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
       }
     });
 
-    // Add recent ratings as notifications
+    // Recent Ratings
     ratings.slice(0, 3).forEach((rating: any) => {
       const notifId = `review-${rating._id}`;
       if (!readSet.has(notifId)) {
@@ -123,19 +127,56 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
       }
     });
 
-    // Sort by time (newest first)
+    // Sort by newest first
     newNotifications.sort((a, b) => b.time.getTime() - a.time.getTime());
     setNotifications(newNotifications);
   }, [orders, users, ratings]);
 
-  // Load notifications when data changes
+  // Load notifications on initial data fetch
   useEffect(() => {
-    if (orders.length > 0 || users.length > 0 || ratings.length > 0) {
+    if (orders.length || users.length || ratings.length) {
       generateNotifications();
     }
   }, [orders, users, ratings, generateNotifications]);
 
-  // Close notification dropdown on click outside
+  // Socket.IO connection for real-time orders
+  useEffect(() => {
+    if (!socketRef.current) {
+      const socket = io("http://localhost:4444");
+      socketRef.current = socket;
+
+      socket.on("connect", () => {
+        console.log("Socket connected:", socket.id);
+        socket.emit("joinAll");
+      });
+
+      socket.on("order:new", (order: any) => {
+        console.log("New order received in Admin Header:", order);
+        const notifId = `order-${order.orderId}`;
+        const readSet = getStoredReadNotifications();
+        if (!readSet.has(notifId)) {
+          const newNotif: Notification = {
+            id: notifId,
+            title: order.title || "New Order Received",
+            message: order.message || `Order #${order.orderId} placed by ${order.customerName}`,
+            time: new Date(order.createdAt),
+            type: "order",
+            read: false,
+            orderId: order.orderId,
+          };
+          setNotifications(prev => [newNotif, ...prev]);
+        }
+      });
+
+      return () => {
+        socket.disconnect();
+        socketRef.current = null;
+        console.log("Socket disconnected");
+      };
+    }
+  }, []);
+
+  // Close notification dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
@@ -146,17 +187,14 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Mark notification as read
+  // Mark notifications as read
   const markAsRead = useCallback((id: string) => {
     saveReadNotification(id);
     setNotifications(prev => prev.filter(notif => notif.id !== id));
   }, []);
 
-  // Mark all as read
   const markAllAsRead = useCallback(() => {
-    notifications.forEach(notif => {
-      saveReadNotification(notif.id);
-    });
+    notifications.forEach(notif => saveReadNotification(notif.id));
     setNotifications([]);
   }, [notifications]);
 
@@ -186,9 +224,7 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
           </div>
           <div>
             <p className="header-profile-name-small">{fullName}</p>
-            <p className="header-profile-email">
-              {user?.email || "admin@delvoura.com"}
-            </p>
+            <p className="header-profile-email">{user?.email || "admin@delvoura.com"}</p>
           </div>
         </div>
       ),
@@ -232,16 +268,13 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
     <>
       <Header className="admin-header">
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="menu-toggle-btn"
-          >
+          <button onClick={() => setCollapsed(!collapsed)} className="menu-toggle-btn">
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </button>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Notification Bell with Dropdown */}
+          {/* Notification Bell */}
           <div className="header-notification-wrapper" ref={notificationRef}>
             <Badge count={unreadCount} size="small" className="header-badge">
               <button
@@ -295,6 +328,7 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
             )}
           </div>
 
+          {/* User Profile Dropdown */}
           <Dropdown
             menu={{
               items: userMenuItems,

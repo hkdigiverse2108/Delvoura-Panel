@@ -1168,7 +1168,7 @@ select:focus-visible {
 }
 
 .advanced-filter-body.open {
-  max-height: 500px;
+  max-height: 780px;
   opacity: 1;
 }
 
@@ -1497,7 +1497,7 @@ select:focus-visible {
 
   .product-filter-grid {
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
  
   

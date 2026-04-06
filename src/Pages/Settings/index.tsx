@@ -10,7 +10,8 @@ import {
 import { Queries } from "../../Api/Queries";
 import { Mutations } from "../../Api/Mutations";
 import "../../../public/assets/css/setting.css";
-import { CommonImageUpload, CommonInput } from "../../Components/common/commonForm";
+import {  CommonInput } from "../../Components/common/commonForm";
+import { SingleImageField } from "../../Components/common/uploads";
 
 // Define types
 interface SocialMediaLinks {
@@ -21,7 +22,7 @@ interface SocialMediaLinks {
 }
 
 interface SettingsForm {
-  logo: string;
+  logo: string | null;
   isRazorpay: boolean;
   razorpayApiKey: string;
   razorpayApiSecret: string;
@@ -66,7 +67,7 @@ const Settings = () => {
   const addEditMutation = Mutations.useAddEditSettings();
 
   const [form, setForm] = useState<SettingsForm>({
-    logo: "",
+  logo: null,
     isRazorpay: false,
     razorpayApiKey: "",
     razorpayApiSecret: "",
@@ -95,7 +96,7 @@ const Settings = () => {
       const apiData = data.data as ApiResponse;
       
       setForm({
-        logo: apiData.logo || "",
+       logo: apiData.logo ?? null,
         isRazorpay: apiData.isRazorpay || false,
         razorpayApiKey: apiData.razorpayApiKey || "",
         razorpayApiSecret: apiData.razorpayApiSecret || "",
@@ -184,11 +185,13 @@ const Settings = () => {
               </div>
             </div>
             <div className="p-6">
-              <CommonImageUpload
-                label="Logo"
-                value={form.logo}
-                onChange={(_file: File | null, url: string) => handleChange("logo", url)}
-              />
+
+<SingleImageField
+  label="Logo"
+  variant="banner"
+  value={form.logo || ""}
+  onChange={(url) => handleChange("logo", url)}
+/>
             </div>
           </div>
 

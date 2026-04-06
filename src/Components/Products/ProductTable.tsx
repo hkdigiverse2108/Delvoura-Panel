@@ -62,27 +62,30 @@ const ProductTable = ({
       },
     },
 
-    {
-      title: "Product",
-      key: "name",
-      render: (item: any) => (
-        <div className="product-info-cell">
-          <span className="product-name">{item.name || "-"}</span>
-        </div>
-      ),
-    },
+{
+  title: "Product",
+  key: "name",
+  render: (item: any) => (
+    <div className="product-info-cell max-w-[200px]">
+      <span className="product-name block truncate" title={item.name}>
+        {item.name || "-"}
+      </span>
+    </div>
+  ),
+},
 
-    {
-      title: "Title",
-      key: "title",
-      width: 150,
-      render: (item: any) => (
-        <div className="product-info-cell">
-          <span className="product-name">{item.title || "-"}</span>
-        </div>
-      ),
-    },
-
+{
+  title: "Title",
+  key: "title",
+  width: 180,
+  render: (item: any) => (
+    <div className="product-info-cell max-w-[200px]">
+      <span className="product-name block truncate" title={item.title}>
+        {item.title || "-"}
+      </span>
+    </div>
+  ),
+},
     {
       title: "Gender",
       key: "gender",
@@ -94,16 +97,18 @@ const ProductTable = ({
       ),
     },
 
-    {
-      title: "MRP",
-      key: "mrp",
-      width: 100,
-      render: (item: any) => (
-        <span className="table-text strong">
-          {item.mrp ? `₹${item.mrp}` : "-"}
-        </span>
-      ),
-    },
+  //   {
+  //     title: "MRP",
+  //     key: "mrp",
+  //     width: 100,
+  //     render: (item: any) => (
+  //       <span className="table-text strong">
+  //       {item.variants?.[0]?.mrp
+  // ? `₹${item.variants[0].mrp}`
+  // : "-"}
+  //       </span>
+  //     ),
+  //   },
 
    
 
