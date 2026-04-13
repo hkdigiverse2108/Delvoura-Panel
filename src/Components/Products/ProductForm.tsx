@@ -310,28 +310,65 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
   const [showPreview, setShowPreview] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
 
-  const [form, setForm] = useState<any>({
-    name: "",
-    title: "",
-    gender: "unisex",
-    collectionIds: [],
-    seasonIds: [],
-    scentIds: [],
-    variants: [{ size: "", mrp: undefined, price: undefined }],
-    ingredients: [""],
-    description: "",
-    usageTips: "",
-    scentStory: "",
-    metaTitle: "",
-    metaDescription: "",
-    metaKeywords: [""],
-    slug: "",
-    brandManufacturerInfo: "",
-    isTrending: false,
-    isFeatured: false,
-    isActive: true,
-    coverimage: "",
-    images: [],
+  const [form, setForm] = useState<any>(() => {
+    if (initialValues) {
+      return {
+        name: initialValues.name || "",
+        title: initialValues.title || "",
+        gender: initialValues.gender || "unisex",
+        collectionIds: (initialValues.collectionIds || []).map((v: any) => v._id || v),
+        seasonIds: (initialValues.seasonIds || []).map((v: any) => v._id || v),
+        scentIds: (initialValues.scentIds || []).map((v: any) => v._id || v),
+        variants: initialValues.variants?.length
+          ? initialValues.variants.map((v: any) => ({
+              size: v.size || "",
+              price: v.price,
+              mrp: v.mrp,
+            }))
+          : [{ size: "", mrp: undefined, price: undefined }],
+        ingredients: initialValues.ingredients?.length
+          ? initialValues.ingredients
+          : [""],
+        description: initialValues.description || "",
+        usageTips: initialValues.usageTips || "",
+        scentStory: initialValues.scentStory || "",
+        metaTitle: initialValues.metaTitle || "",
+        metaDescription: initialValues.metaDescription || "",
+        metaKeywords: initialValues.metaKeywords?.length
+          ? initialValues.metaKeywords
+          : [""],
+        slug: initialValues.slug || "",
+        brandManufacturerInfo: initialValues.brandManufacturerInfo || "",
+        isTrending: !!initialValues.isTrending,
+        isFeatured: !!initialValues.isFeatured,
+        isActive: initialValues.isActive !== false,
+        coverimage: initialValues.coverimage || "",
+        images: Array.isArray(initialValues.images) ? initialValues.images : [],
+      };
+    }
+    return {
+      name: "",
+      title: "",
+      gender: "unisex",
+      collectionIds: [],
+      seasonIds: [],
+      scentIds: [],
+      variants: [{ size: "", mrp: undefined, price: undefined }],
+      ingredients: [""],
+      description: "",
+      usageTips: "",
+      scentStory: "",
+      metaTitle: "",
+      metaDescription: "",
+      metaKeywords: [""],
+      slug: "",
+      brandManufacturerInfo: "",
+      isTrending: false,
+      isFeatured: false,
+      isActive: true,
+      coverimage: "",
+      images: [],
+    };
   });
 
   const [errors, setErrors] = useState<any>({});
@@ -365,62 +402,43 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
     [scentData]
   );
 
- useEffect(() => {
-  if (!initialValues) return;
-
-  const normalizeIds = (arr: any[] = []) =>
-    arr.map((item: any) => item?._id || item);
-
-  setForm({
-    name: initialValues?.name ?? "",
-    title: initialValues?.title ?? "",
-    gender: initialValues?.gender ?? "unisex",
-
-    collectionIds: normalizeIds(initialValues?.collectionIds),
-    seasonIds: normalizeIds(initialValues?.seasonIds),
-    scentIds: normalizeIds(initialValues?.scentIds),
-
-   variants: initialValues.variants?.length > 0
-  ? initialValues.variants.map((v: any) => ({
-      size: v.size || "",
-      price: v.price,
-      mrp: v.mrp
-    }))
-        : [{ size: "", mrp: undefined, price: undefined }],
-
-    ingredients:
-      initialValues?.ingredients?.length
-        ? initialValues.ingredients
-        : [""],
-
-    description: initialValues?.description ?? "",
-    usageTips: initialValues?.usageTips ?? "",
-    scentStory: initialValues?.scentStory ?? "",
-
-    metaTitle: initialValues?.metaTitle ?? "",
-    metaDescription: initialValues?.metaDescription ?? "",
-    metaKeywords:
-      initialValues?.metaKeywords?.length
-        ? initialValues.metaKeywords
-        : [""],
-
-    slug: initialValues?.slug ?? "",
-
-    brandManufacturerInfo:
-      initialValues?.brandManufacturerInfo ?? "",
-
-    isTrending: initialValues?.isTrending ?? false,
-    isFeatured: initialValues?.isFeatured ?? false,
-    isActive: initialValues?.isActive ?? true,
-
-    coverimage: initialValues?.coverimage ?? "",
-
-    images:
-      Array.isArray(initialValues?.images)
-        ? initialValues.images
-        : [],
-  });
-}, [initialValues]);
+  useEffect(() => {
+    if (initialValues) {
+      setForm({
+        name: initialValues.name || "",
+        title: initialValues.title || "",
+        gender: initialValues.gender || "unisex",
+        collectionIds: (initialValues.collectionIds || []).map((v: any) => v._id || v),
+        seasonIds: (initialValues.seasonIds || []).map((v: any) => v._id || v),
+        scentIds: (initialValues.scentIds || []).map((v: any) => v._id || v),
+        variants: initialValues.variants?.length
+          ? initialValues.variants.map((v: any) => ({
+              size: v.size || "",
+              price: v.price,
+              mrp: v.mrp,
+            }))
+          : [{ size: "", mrp: undefined, price: undefined }],
+        ingredients: initialValues.ingredients?.length
+          ? initialValues.ingredients
+          : [""],
+        description: initialValues.description || "",
+        usageTips: initialValues.usageTips || "",
+        scentStory: initialValues.scentStory || "",
+        metaTitle: initialValues.metaTitle || "",
+        metaDescription: initialValues.metaDescription || "",
+        metaKeywords: initialValues.metaKeywords?.length
+          ? initialValues.metaKeywords
+          : [""],
+        slug: initialValues.slug || "",
+        brandManufacturerInfo: initialValues.brandManufacturerInfo || "",
+        isTrending: !!initialValues.isTrending,
+        isFeatured: !!initialValues.isFeatured,
+        isActive: initialValues.isActive !== false,
+        coverimage: initialValues.coverimage || "",
+        images: Array.isArray(initialValues.images) ? initialValues.images : [],
+      });
+    }
+  }, [initialValues]);
   const updateArrayField = (field: string, index: number, value: string) => {
     const updated = [...form[field]];
     updated[index] = value;
@@ -659,7 +677,7 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
                     </div>
                     <div className="space-y-3">
                       {form.variants.map((variant: any, index: number) => (
-                        <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 rounded-xl p-3 bg-gray-50">
+                        <div key={index} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-3 rounded-xl p-3 bg-gray-50">
 
                           <Input
                             value={variant.size}

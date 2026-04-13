@@ -142,12 +142,22 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
   // Socket.IO connection for real-time orders
   useEffect(() => {
     if (!socketRef.current) {
-      const socket = io("http://localhost:4444");
+      const socket = io(import.meta.env.VITE_API_BASE_URL, {
+        transports: ["polling"],
+        upgrade: false,
+        auth: {
+          token: localStorage.getItem("token"),
+        },
+      });
       socketRef.current = socket;
 
       socket.on("connect", () => {
-        console.log("Socket connected:", socket.id);
+        //console.log("Socket connected:", socket.id);
         socket.emit("joinAll");
+      });
+
+      socket.on("connect_error", (err) => {
+        console.error("Socket connection error:", err.message);
       });
 
       socket.on("order:new", (order: any) => {
