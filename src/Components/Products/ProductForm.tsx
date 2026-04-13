@@ -186,17 +186,17 @@ const ProductPreview = ({ form }: { form: any }) => {
         )}
         {/* price */}
         <div>
-        <div className="flex items-end gap-3">
-  <span className="text-3xl font-bold text-orange-500">
-    ₹{selectedVariant?.price || 0}
-  </span>
+          <div className="flex items-end gap-3">
+            <span className="text-3xl font-bold text-orange-500">
+              ₹{selectedVariant?.price || 0}
+            </span>
 
-  {selectedVariant?.mrp && (
-    <span className="text-gray-400 line-through text-lg">
-      ₹{selectedVariant.mrp}
-    </span>
-  )}
-</div>
+            {selectedVariant?.mrp && (
+              <span className="text-gray-400 line-through text-lg">
+                ₹{selectedVariant.mrp}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-gray-400 mt-0.5">
             Inclusive of all taxes
           </p>
@@ -321,10 +321,10 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
         scentIds: (initialValues.scentIds || []).map((v: any) => v._id || v),
         variants: initialValues.variants?.length
           ? initialValues.variants.map((v: any) => ({
-              size: v.size || "",
-              price: v.price,
-              mrp: v.mrp,
-            }))
+            size: v.size || "",
+            price: v.price,
+            mrp: v.mrp,
+          }))
           : [{ size: "", mrp: undefined, price: undefined }],
         ingredients: initialValues.ingredients?.length
           ? initialValues.ingredients
@@ -413,10 +413,10 @@ const ProductFormPage = ({ initialValues, onSubmit, onCancel }: ProductFormProps
         scentIds: (initialValues.scentIds || []).map((v: any) => v._id || v),
         variants: initialValues.variants?.length
           ? initialValues.variants.map((v: any) => ({
-              size: v.size || "",
-              price: v.price,
-              mrp: v.mrp,
-            }))
+            size: v.size || "",
+            price: v.price,
+            mrp: v.mrp,
+          }))
           : [{ size: "", mrp: undefined, price: undefined }],
         ingredients: initialValues.ingredients?.length
           ? initialValues.ingredients

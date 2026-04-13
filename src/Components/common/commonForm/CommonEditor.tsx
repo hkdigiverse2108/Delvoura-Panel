@@ -10,7 +10,7 @@ interface Props {
   onChange: (val: string) => void;
   error?: string;
   height?: string;
-  readOnly?: boolean; 
+  readOnly?: boolean;
 }
 
 const CommonEditor = ({
@@ -39,9 +39,8 @@ const CommonEditor = ({
       </label>
 
       <div
-        className={`rounded-xl overflow-hidden border ${
-          error ? "border-red-500" : "border-gray-200"
-        }`}
+        className={`rounded-xl overflow-hidden border ${error ? "border-red-500" : "border-gray-200"
+          }`}
       >
         <ReactQuill
           theme="snow"

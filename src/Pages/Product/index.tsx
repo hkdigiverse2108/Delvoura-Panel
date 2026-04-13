@@ -110,7 +110,7 @@ const Product = () => {
       .map((v: any) => ({
         size: typeof v === "string" ? v : v.size,
         price: typeof v === "object" ? v.price || 0 : 0,
-            mrp: typeof v === "object" ? v.mrp || 0 : 0,
+        mrp: typeof v === "object" ? v.mrp || 0 : 0,
       }))
       .filter((v: any) => v.size),
     ingredients: item.ingredients || [],
@@ -140,7 +140,7 @@ const Product = () => {
           .map((v: any) => ({
             size: typeof v === "string" ? v.trim() : v.size?.trim(),
             price: typeof v === "object" ? v.price || 0 : 0,
-                mrp: typeof v === "object" ? v.mrp || 0 : 0,
+            mrp: typeof v === "object" ? v.mrp || 0 : 0,
           }))
           .filter((v: any) => v.size),
         collectionIds: (values.collectionIds || []).map((v: any) => v._id || v),
@@ -177,17 +177,17 @@ const Product = () => {
     }
   };
 
-const handleDelete = async () => {
-  if (!deleteId) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
 
-  try {
-    await deleteProduct.mutateAsync(deleteId);
-    setDeleteId(null);
-    refetch();
-  } catch (error) {
-    console.error(error);
-  }
-};
+    try {
+      await deleteProduct.mutateAsync(deleteId);
+      setDeleteId(null);
+      refetch();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleToggleStatus = async (item: any) => {
     try {
@@ -312,22 +312,22 @@ const handleDelete = async () => {
             />
           </div>
 
-            <div className="product-filter-field">
-              <label>Featured</label>
-              <Select
-                value={typeof filters.FeaturedFilter === "undefined" ? undefined : filters.FeaturedFilter}
-                onChange={(value: boolean | undefined) =>
-                  setFilters((prev: any) => ({ ...prev, FeaturedFilter: value }))
-                }
-                allowClear
-                size="large"
-                placeholder="Select Type"
-                options={[
-                  { label: "Featured", value: true },
-                  { label: "Normal", value: false }
-                ]}
-              />
-            </div>
+          <div className="product-filter-field">
+            <label>Featured</label>
+            <Select
+              value={typeof filters.FeaturedFilter === "undefined" ? undefined : filters.FeaturedFilter}
+              onChange={(value: boolean | undefined) =>
+                setFilters((prev: any) => ({ ...prev, FeaturedFilter: value }))
+              }
+              allowClear
+              size="large"
+              placeholder="Select Type"
+              options={[
+                { label: "Featured", value: true },
+                { label: "Normal", value: false }
+              ]}
+            />
+          </div>
 
           <div className="product-filter-field">
             <label>Collection</label>
@@ -415,18 +415,18 @@ const handleDelete = async () => {
         }}
       />
 
-    <ProductTable
-  data={filteredProducts}
-  loading={isLoading}
-  page={pagination.page}
-  limit={pagination.limit}
-  onEdit={(item: any) => {
-    setEditData(item);
-    setMode("form");
-  }}
-  onDelete={(id: string) => setDeleteId(id)}
-  onToggleStatus={handleToggleStatus}
-/>
+      <ProductTable
+        data={filteredProducts}
+        loading={isLoading}
+        page={pagination.page}
+        limit={pagination.limit}
+        onEdit={(item: any) => {
+          setEditData(item);
+          setMode("form");
+        }}
+        onDelete={(id: string) => setDeleteId(id)}
+        onToggleStatus={handleToggleStatus}
+      />
       <ConfirmModal
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
