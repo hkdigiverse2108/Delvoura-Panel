@@ -20,9 +20,10 @@ const CommonEditor = ({
   onChange,
   error,
   height = "200px",
+  readOnly = false,
 }: Props) => {
   const modules = {
-    toolbar: [
+    toolbar: readOnly ? false : [
       [{ header: [1, 2, 3, false] }],
       ["bold", "italic", "underline"],
       [{ list: "ordered" }, { list: "bullet" }],
@@ -33,7 +34,7 @@ const CommonEditor = ({
   };
 
   return (
-    <div>
+    <div className={readOnly ? "read-only-editor" : ""}>
       <label className="block text-sm font-semibold text-gray-700 ">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -43,11 +44,12 @@ const CommonEditor = ({
           }`}
       >
         <ReactQuill
-          theme="snow"
+          theme={readOnly ? "bubble" : "snow"}
           value={value}
           onChange={onChange}
           modules={modules}
           style={{ height: height }}
+          readOnly={readOnly}
           className="bg-white"
         />
       </div>

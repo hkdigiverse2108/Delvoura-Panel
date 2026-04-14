@@ -18,11 +18,22 @@ const TermsConditions = () => {
   const addEditMutation =
     Mutations.useAddEditTermsConditions();
 useEffect(() => {
-  const responseArray = data?.data?.terms_conditions_data;
+  const rawData = data?.data;
 
-  if (responseArray && responseArray.length > 0) {
-    setContent(responseArray[0].content);
-    setSavedContent(responseArray[0].content);
+  // Case 1: data.data is an array (legacy/documented format)
+  const responseArray = (rawData as any)?.terms_conditions_data;
+  if (Array.isArray(responseArray) && responseArray.length > 0) {
+    setContent(responseArray[0].content || "");
+    setSavedContent(responseArray[0].content || "");
+    setIsEditing(false);
+    return;
+  }
+
+  // Case 2: data.data is the object directly with content field
+  if (rawData && typeof rawData === 'object' && 'content' in rawData) {
+    const content = (rawData as any).content;
+    setContent(content || "");
+    setSavedContent(content || "");
     setIsEditing(false);
   }
 }, [data]);

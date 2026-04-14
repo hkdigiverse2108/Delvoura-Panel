@@ -15,10 +15,22 @@ const RefundPolicy = () => {
   const addEditMutation = Mutations.useAddEditRefundPolicy();
 
   useEffect(() => {
-    const responseArray = data?.data?.refund_policy_data;
-    if (responseArray && responseArray.length > 0) {
-      setContent(responseArray[0].content);
-      setSavedContent(responseArray[0].content);
+    const rawData = data?.data;
+
+    // Case 1: data.data is an array (legacy/documented format)
+    const responseArray = (rawData as any)?.refund_policy_data;
+    if (Array.isArray(responseArray) && responseArray.length > 0) {
+      setContent(responseArray[0].content || "");
+      setSavedContent(responseArray[0].content || "");
+      setIsEditing(false);
+      return;
+    }
+
+    // Case 2: data.data is the object directly with content field
+    if (rawData && typeof rawData === 'object' && 'content' in rawData) {
+      const content = (rawData as any).content;
+      setContent(content || "");
+      setSavedContent(content || "");
       setIsEditing(false);
     }
   }, [data]);
