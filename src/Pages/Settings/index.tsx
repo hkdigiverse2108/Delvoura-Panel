@@ -221,7 +221,14 @@ const Settings = () => {
                     <input
                       type="checkbox"
                       checked={form.isRazorpay}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("isRazorpay", e.target.checked)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const checked = e.target.checked;
+                        setForm(prev => ({
+                          ...prev,
+                          isRazorpay: checked,
+                          isPhonePe: checked ? false : prev.isPhonePe
+                        }));
+                      }}
                     />
                     <span className="toggle-slider"></span>
                   </label>
@@ -288,7 +295,14 @@ const Settings = () => {
                     <input
                       type="checkbox"
                       checked={form.isPhonePe}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("isPhonePe", e.target.checked)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const checked = e.target.checked;
+                        setForm(prev => ({
+                          ...prev,
+                          isPhonePe: checked,
+                          isRazorpay: checked ? false : prev.isRazorpay
+                        }));
+                      }}
                     />
                     <span className="toggle-slider"></span>
                   </label>
