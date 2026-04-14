@@ -53,7 +53,7 @@ const filteredProducts = products.filter(
   useEffect(() => {
     if (initialValues) {
       setForm({
-        productId: initialValues.productId || "",
+        productId: typeof initialValues.productId === 'object' ? initialValues.productId._id : initialValues.productId || "",
         firstName: initialValues.firstName || "",
         lastName: initialValues.lastName || "",
         email: initialValues.email || "",
