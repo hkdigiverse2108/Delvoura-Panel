@@ -18,7 +18,7 @@ export type StaticPageSingleResponse = ApiResponse<StaticPageResponse>;
 export type StaticPageListResponse = {
   status: number;
   message: string;
-  data: {
+  data: StaticPageResponse & {
     terms_service_data?: StaticPageResponse[];
     terms_conditions_data?: StaticPageResponse[];
     privacy_policy_data?: StaticPageResponse[];
