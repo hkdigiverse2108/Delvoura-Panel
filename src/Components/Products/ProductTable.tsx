@@ -36,31 +36,38 @@ const ProductTable = ({
     },
 
     {
-      title: "Cover",
-      key: "coverimage",
-      render: (item: any) => {
-        const imageUrl = item.coverimage || item.images?.[0];
+  title: "Cover",
+  key: "coverimage",
+  render: (item: any) => {
+    const images = item.images || [];
+    const imageUrl = item.coverimage || images?.[0];
 
-        return (
-          <div className="flex items-center">
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={item.name}
-                className="h-12 w-12 rounded-lg object-cover border"
-              />
-            ) : (
-              <div
-                className="h-12 w-12 rounded-lg flex items-center justify-center border"
-                style={{ backgroundColor: "var(--gray-light)" }}
-              >
-                <Package size={18} style={{ color: "var(--primary)" }} />
+    return (
+      <div className="relative w-12 h-12">
+        {imageUrl ? (
+          <>
+            <img
+              src={imageUrl}
+              alt={item.name}
+              className="h-12 w-12 rounded-lg object-cover border border-gray-200 bg-gray-50"
+            />
+
+            {/* image count badge */}
+            {images.length > 1 && (
+              <div className="absolute -bottom-1 -right-1 bg-black text-white text-[10px] px-1 rounded">
+                +{images.length - 1}
               </div>
             )}
+          </>
+        ) : (
+          <div className="h-12 w-12 rounded-lg flex items-center justify-center border border-gray-200 bg-gray-50">
+            <Package size={18} />
           </div>
-        );
-      },
-    },
+        )}
+      </div>
+    );
+  },
+},
 
 {
   title: "Product",
@@ -147,17 +154,18 @@ const ProductTable = ({
       render: (item: any) => (
         <div className="flex justify-end gap-2">
           <button
-            className="action-btn"
+            // className="action-btn"
+             className={`action-btn ${item.isActive ? "view" : "inactive-view"}`}
             onClick={() => onToggleStatus(item)}
-            title={item.isActive ? "Set Inactive" : "Set Active"}
-            style={{
-              color: item.isActive
-                ? "var(--primary)"
-                : "var(--red)",
-              borderColor: item.isActive
-                ? "var(--primary-light)"
-                : "rgba(255,0,0,0.15)",
-            }}
+            // title={item.isActive ? "Set Inactive" : "Set Active"}
+            // style={{
+            //   color: item.isActive
+            //     ? "var(--primary)"
+            //     : "var(--red)",
+            //   borderColor: item.isActive
+            //     ? "var(--primary-light)"
+            //     : "rgba(255,0,0,0.15)",
+            // }}
           >
             {item.isActive ? (
               <Eye size={16} />

@@ -11,6 +11,8 @@ const TermsService = () => {
   const [content, setContent] = useState("");
   const [savedContent, setSavedContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const hasChanges = content !== savedContent;
+  const [saving, setSaving] = useState(false);
   
 
   const { data, refetch, error } = Queries.useGetTermsService();
@@ -57,14 +59,25 @@ useEffect(() => {
   const handleSave = async () => {
     if (!content.trim()) return;
 
-    await addEditMutation.mutateAsync({
-      content,
-    });
+    setSaving(true);
+    await addEditMutation.mutateAsync({ content });
+    setSaving(false);
 
     setSavedContent(content);
     setIsEditing(false);
     refetch();
   };
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasChanges]);
 
 
   return (
@@ -73,22 +86,48 @@ useEffect(() => {
 
       <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-lg bg-gray-100">
-            <FileText size={18} />
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-gray-100">
+              <FileText size={18} />
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Terms of Service
+              </h2>
+              <p className="text-sm text-gray-500">
+                Manage your legal content
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Last updated: {savedContent ? new Date().toLocaleString() : "—"}
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h2 className="text-lg font-semibold">
-              Terms of Service
-            </h2>
-            <p className="text-sm text-gray-500">
-              Add, preview and edit content
-            </p>
-          </div>
+          {/* STATUS */}
+          <span
+            className={`text-xs px-3 py-1 rounded-full border 
+            ${
+              hasChanges
+                ? "bg-orange-50 text-orange-700 border-orange-200"
+                : isEditing
+                ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                : "bg-green-50 text-green-700 border-green-200"
+            }`}
+          >
+            {hasChanges ? "Unsaved" : isEditing ? "Editing" : "Saved"}
+          </span>
         </div>
 
-        <div className="w-full border border-gray-200 rounded-lg">
+        <div
+          className={`w-full rounded-xl border transition-all duration-200
+          ${
+            isEditing
+              ? "border-[var(--primary)] shadow-sm focus-within:ring-2 focus-within:ring-[var(--primary)]/20"
+              : "border-gray-200 bg-gray-50 hover:bg-white"
+          }`}
+        >
           <CommonEditor
             label=""
             value={content}
@@ -118,12 +157,12 @@ useEffect(() => {
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={!content.trim()}
+                disabled={!content.trim() || !hasChanges}
                 className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition disabled:opacity-50"
               >
                 <span className="flex items-center gap-2">
                   <Save size={15} />
-                  Save
+                  {saving ? "Saving..." : "Save"}
                 </span>
               </button>
             </>

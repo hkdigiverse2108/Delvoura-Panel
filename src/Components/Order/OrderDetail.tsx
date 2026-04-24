@@ -108,7 +108,15 @@ const OrderDetails = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <Receipt size={28} className="text-primary" />
-                Order #{order._id?.slice(-8) || "N/A"}
+                
+                <span
+                  onClick={() => {
+                    navigator.clipboard.writeText(order._id);
+                  }}
+                  className="cursor-pointer hover:text-primary"
+                >
+                  Order #{order._id?.slice(-8) || "N/A"}
+                </span>
               </h1>
               <p className="text-sm text-gray-500 mt-1">Track and manage order details</p>
             </div>
@@ -342,6 +350,17 @@ const OrderDetails = () => {
                     </div>
                     <span className="text-sm font-medium text-gray-900">{order.items?.length || 0}</span>
                   </div>
+                  {/* <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Package size={14} className="text-gray-400" />
+                      <span className="text-sm text-gray-600">Payment Method</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">{order.razorpayId
+      ? "Razorpay"
+      : order.phonePeId
+      ? "PhonePe"
+      : "COD"}</span>
+                  </div> */}
                 </div>
 
                 {/* Amount Breakdown */}
@@ -400,6 +419,7 @@ const OrderDetails = () => {
               </div>
             )}
           </div>
+          
         </div>
       </div>
     </div>

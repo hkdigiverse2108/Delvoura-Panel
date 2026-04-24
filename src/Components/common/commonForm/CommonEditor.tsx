@@ -40,7 +40,7 @@ const CommonEditor = ({
       </label>
 
       <div
-        className={`rounded-xl overflow-hidden border ${error ? "border-red-500" : "border-gray-200"
+        className={`rounded-md overflow-hidden border ${error ? "border-red-500" : "border-gray-200"
           }`}
       >
         <ReactQuill

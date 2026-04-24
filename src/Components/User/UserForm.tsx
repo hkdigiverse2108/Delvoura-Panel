@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { Input, Switch } from "antd";
-import { User, Mail, Phone, Activity } from "lucide-react";
+import { User, Mail, Phone, Activity, BadgeCheck } from "lucide-react";
 import CommonModal from "../common/CommonModal";
 
 const UserForm = ({ open, onClose, onSubmit, initialValues }: any) => {
@@ -84,6 +84,7 @@ const UserForm = ({ open, onClose, onSubmit, initialValues }: any) => {
           onChange={(e) => setForm({ ...form, lastName: e.target.value })}
           placeholder="Last Name"
           size="large"
+          prefix={<BadgeCheck size={16} />}
         />
 
         {/* Email */}

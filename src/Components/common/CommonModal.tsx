@@ -8,7 +8,7 @@ interface CommonModalProps { open: boolean; onClose: () => void;  title: string;
 const CommonModal = ({open,onClose,title,subtitle,icon,children, onSubmit, submitText = "Submit", cancelText = "Cancel", submitDisabled = false, width = 480,}: CommonModalProps) => {
   return (
     <Modal open={open} onCancel={onClose} footer={null} width={width} centered styles={{ body: { padding: 0 }, }} >
-       <div className="px-6 py-5" style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-80) 100%)" }}>
+       <div className="px-6 py-5" style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-80) 100%)", borderRadius: "7px" }}>
         <div className="flex items-center gap-3">
           {icon && (
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "white" }}>{icon} </div> )}

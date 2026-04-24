@@ -513,60 +513,88 @@ const ProfilePage = () => {
 
                 {/* User Details */}
                 <div style={{ padding: "0 24px 24px" }}>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <MailOutlined style={{ color: "var(--primary)", fontSize: 18 }} />
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
+                  <div className="space-y-4">
+
+                    {/* Email */}
+                    <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:shadow-md transition">
+                      <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary/10">
+                        <MailOutlined className="text-[18px]" style={{ color: "var(--primary)" }} />
+                      </div>
+                      <div className="flex flex-col items-start h-full leading-tight" >
+                        <Text type="secondary" className="text-xs block">
                           Email
                         </Text>
-                        <br />
-                        <Text strong>{profile?.email}</Text>
+                        <Text strong className="text-sm font-medium mt-1">
+                          {profile?.email || "-"}
+                        </Text>
                       </div>
                     </div>
 
+                    {/* Phone */}
                     {(profile?.contact?.phoneNo || profileForm.phoneNo) && (
-                      <div className="flex items-center gap-3">
-                        <PhoneOutlined style={{ color: "var(--primary)", fontSize: 18 }} />
+                      <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:shadow-md transition">
+                        <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary/10">
+                          <PhoneOutlined className="text-[18px]" style={{ color: "var(--primary)" }} />
+                        </div>
                         <div>
-                          <Text type="secondary" style={{ fontSize: 12 }}>
+                          <Text type="secondary" className="text-xs block">
                             Phone
                           </Text>
-                          <br />
-                          <Text strong>
+                          <Text strong className="text-sm">
                             {profile?.contact?.countryCode} {profile?.contact?.phoneNo}
                           </Text>
                         </div>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3">
-                      <CalendarOutlined style={{ color: "var(--primary)", fontSize: 18 }} />
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
+                    {/* Joined */}
+                    <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:shadow-md transition h-[72px]">
+
+                      {/* ICON */}
+                      <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+                        <CalendarOutlined className="text-[18px]" style={{ color: "var(--primary)" }} />
+                      </div>
+
+                      {/* TEXT */}
+                      <div className="flex flex-col items-start h-full leading-tight">
+                        <span className="text-xs text-gray-400">
                           Joined
-                        </Text>
-                        <br />
-                        <Text strong>
+                        </span>
+                        <span className="text-sm font-medium mt-1">
                           {profile?.createdAt
                             ? dayjs(profile.createdAt).format("DD MMM YYYY")
                             : "-"}
-                        </Text>
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <IdcardOutlined style={{ color: "var(--primary)", fontSize: 18 }} />
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          User ID
-                        </Text>
-                        <br />
-                        <Text strong copyable style={{ fontSize: 12 }}>
-                          {user?._id?.slice(-8)}
-                        </Text>
+                    {/* User ID */}
+                    <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:shadow-md transition h-[72px]">
+
+                      {/* ICON */}
+                      <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+                        <IdcardOutlined className="text-[18px]" style={{ color: "var(--primary)" }} />
+                      </div>
+
+                      {/* TEXT */}
+                      <div className="flex flex-col justify-center h-full">
+                        <div className="flex flex-col items-start h-full leading-tight">
+                          <span className="text-xs text-gray-400">
+                            User ID
+                          </span>
+
+                          <Text
+                            strong
+                            copyable
+                            className="text-sm copy-black flex items-center gap-1 mt-1"
+                            style={{ color: "#000" }}
+                          >
+                            {user?._id?.slice(-8) || "-"}
+                          </Text>
+                        </div>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>

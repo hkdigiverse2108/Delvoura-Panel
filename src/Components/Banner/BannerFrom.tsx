@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import MultipleImageField from "../common/uploads/MultipleImageField";
 import { CommonFormActions, CommonFormCard, CommonPageHeaderForm } from "../common/commonForm";
 
+
 const BannerFormPage = ({ initialValues, onSubmit, onBack }: any) => {
   const [form, setForm] = useState({  bannerImages: [] as string[], });
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const isEdit = !!initialValues;
+  const isEdit = !!initialValues?.bannerImages?.length;
 
   useEffect(() => {
     if (initialValues) {
@@ -21,7 +22,13 @@ const BannerFormPage = ({ initialValues, onSubmit, onBack }: any) => {
     let newErrors: any = {};
     if (!form.bannerImages.length) {  newErrors.bannerImages = "At least one banner image is required"; }
     setErrors(newErrors); return Object.keys(newErrors).length === 0;};
-  const handleSubmit = () => { if (!validate()) return; setLoading(true); onSubmit(form); setLoading(false);};
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    setLoading(true);
+    await onSubmit(form);
+    setLoading(false);
+  };
 
   return (
     <CommonFormCard>
@@ -37,7 +44,7 @@ const BannerFormPage = ({ initialValues, onSubmit, onBack }: any) => {
               </p>
             )}
           </div>
-          <CommonFormActions  onCancel={onBack}  onSubmit={handleSubmit} submitText="Save Banner" disabled={!form.bannerImages.length}  loading={loading}/>
+          <CommonFormActions  onCancel={onBack}  onSubmit={handleSubmit} submitText="Save Banner" disabled={!form.bannerImages.length || loading}  loading={loading}/>
         </div>
       </div>
     </CommonFormCard>

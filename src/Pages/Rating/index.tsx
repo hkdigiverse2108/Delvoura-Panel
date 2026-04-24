@@ -242,15 +242,15 @@ const clearProductFilter = () => {
             {/* Search Bar */}
             <div className="flex-1 rounded-xl">
                 
-  <CommonSearchFilterBar
-  search={filters.search}
-  onSearchChange={(val) => setFilters({ search: val })}
-  onSearchSubmit={refetch}
+            <CommonSearchFilterBar
+              search={filters.search}
+              onSearchChange={(val) => setFilters({ search: val })}
+              onSearchSubmit={refetch}
 
-  showStatusToggle={false}
-  showTotal={false}
-/>
-</div>
+              showStatusToggle={false}
+              showTotal={false}
+            />
+            </div>
           </div>
         </div>
 

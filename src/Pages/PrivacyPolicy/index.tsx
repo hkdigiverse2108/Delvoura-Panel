@@ -12,6 +12,8 @@ const PrivacyPolicy = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { data, refetch, error } = Queries.useGetPrivacyPolicy();
   const addEditMutation = Mutations.useAddEditPrivacyPolicy();
+  const hasChanges = content !== savedContent;
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const rawData = data?.data;
@@ -42,27 +44,77 @@ const PrivacyPolicy = () => {
   const handleCancel = () => { setContent(savedContent); setIsEditing(false); };
   const handleSave = async () => {
     if (!content.trim()) return;
+
+    setSaving(true);
     await addEditMutation.mutateAsync({ content });
+    setSaving(false);
+
     setSavedContent(content);
     setIsEditing(false);
     refetch();
   };
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasChanges]);
 
   return (
     <div className="user-page w-full">
       <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5">
-        <div className="flex items-center gap-3 mb-4"><div className="p-2 rounded-lg bg-gray-100">
-          <FileText size={18} />
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-gray-100">
+              <FileText size={18} />
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Privacy Policy
+              </h2>
+              <p className="text-sm text-gray-500">
+                Manage your legal content
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Last updated: {savedContent ? new Date().toLocaleString() : "—"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold">Privacy Policy</h2><p className="text-sm text-gray-500">Add, preview and edit content</p>
-            </div></div>
-        <div className="w-full border border-gray-200 rounded-lg"><CommonEditor label="" value={content} onChange={(val) => { if (isEditing) setContent(val); }} height="500px" readOnly={!isEditing} /></div>
+
+          <span
+            className={`text-xs px-3 py-1 rounded-full border 
+            ${
+              hasChanges
+                ? "bg-orange-50 text-orange-700 border-orange-200"
+                : isEditing
+                ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                : "bg-green-50 text-green-700 border-green-200"
+            }`}
+          >
+            {hasChanges ? "Unsaved" : isEditing ? "Editing" : "Saved"}
+          </span>
+        </div>
+        <div
+          className={`w-full rounded-xl border transition-all duration-200
+          ${
+            isEditing
+              ? "border-[var(--primary)] shadow-sm focus-within:ring-2 focus-within:ring-[var(--primary)]/20"
+              : "border-gray-200 bg-gray-50 hover:bg-white"
+          }`}
+        >
+          <CommonEditor label="" value={content} onChange={(val) => { if (isEditing) setContent(val); }} height="500px" readOnly={!isEditing} />
+          </div>
         <div className="mt-4 flex justify-end items-center gap-3">
           {isEditing ? (<><button type="button" onClick={handleCancel} className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition">
             <span className="flex items-center gap-2"><X size={15} />Cancel</span></button>
-            <button type="button" onClick={handleSave} disabled={!content.trim()} className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition disabled:opacity-50">
-              <span className="flex items-center gap-2"><Save size={15} />Save</span></button></>) 
+            <button type="button" onClick={handleSave} disabled={!content.trim() || !hasChanges} className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition disabled:opacity-50">
+              <span className="flex items-center gap-2"><Save size={15} />{saving ? "Saving..." : "Save"}</span></button></>) 
               : (<button type="button" onClick={handleEdit} className="px-4 py-2 rounded-lg bg-[var(--primary,#7c3aed)] text-white hover:opacity-90 transition">
                 <span className="flex items-center gap-2"><Pencil size={15} />Edit</span>
                 </button>)}

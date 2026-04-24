@@ -39,9 +39,9 @@ const BlogTable = ({
       key: "image",
       render: (item: any) =>
         item.image ? (
-          <img src={item.image} alt={item.title} className="w-12 h-12 rounded-lg object-cover border" />
+          <img src={item.image} alt={item.title} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
         ) : (
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center border bg-gray-100">
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center border border-gray-200 bg-gray-100">
             <FolderOpen size={18} style={{ color: "var(--primary)" }} />
           </div>
         ),

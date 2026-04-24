@@ -75,6 +75,57 @@ const Orders = () => {
       setTimeout(() => refetch(), 100);
     }
   };
+  const handleExportOrders = () => {
+  if (!orders.length) {
+    message.warning("No orders to export");
+    return;
+  }
+
+  const headers = [
+    "Order ID",
+    "Customer Name",
+    "Email",
+    "Phone",
+    "Order Status",
+    "Payment Status",
+    "Total (₹)",
+    "Date"
+  ];
+
+  const rows = orders.map((order: any) => [
+    order.orderId || order._id,
+    `${order.firstName || ""} ${order.lastName || ""}`.trim(),
+    order.email || "-",
+    order.phone || "-",
+    order.orderStatus || "-",
+    order.paymentStatus || "-",
+    order.total || 0,
+    order.createdAt
+      ? new Date(order.createdAt).toLocaleString()
+      : "-"
+  ]);
+
+  const formatRow = (row: any[]) =>
+    row.map((value) => `"${String(value).replace(/"/g, '""')}"`);
+
+  const csvContent =
+    "\uFEFF" +
+    [headers, ...rows]
+      .map((row) => formatRow(row).join(","))
+      .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `orders_${Date.now()}.csv`;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  message.success("Orders exported successfully");
+};
 
   // Clear date filter
   const clearDateFilter = () => {
@@ -121,7 +172,8 @@ const Orders = () => {
             subtitle="Manage and track all customer orders"
             buttonText="Export Orders"
             buttonIcon={<Package size={18} />}
-            onButtonClick={() => console.log("Export orders")}
+            // onButtonClick={() => console.log("Export orders")}
+            onButtonClick={handleExportOrders}
           />
         </div>
 
@@ -294,3 +346,4 @@ const Orders = () => {
 };
 
 export default Orders;
+

@@ -209,6 +209,9 @@
   color: #999;
 }
 
+.copy-black .ant-typography-copy {
+  color: black !important;
+}
 /* Profile Dropdown Styles */
 .profile-trigger {
   cursor: pointer;
@@ -334,3 +337,4 @@
     padding: 8px;
   }
 }
+

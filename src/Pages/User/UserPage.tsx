@@ -17,6 +17,7 @@ const User = () => {
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState<any>(null);
  const [deleteId, setDeleteId] = useState<string | null>(null);
+ const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -30,11 +31,11 @@ const User = () => {
   const [statusToggle, setStatusToggle] = useState(true);
 
   const queryParams = {
-    page: pagination.page,
-    limit: pagination.limit,
-    ...(filters.search.trim() && { search: filters.search.trim() }),
-    status: statusToggle ? "active" : "inactive",
-  };
+  page: pagination.page,
+  limit: pagination.limit,
+  ...(debouncedSearch && { search: debouncedSearch }),
+  status: statusToggle ? "active" : "inactive",
+};
 
   const { data, isLoading, refetch } =
     Queries.useGetUsers(queryParams);
@@ -93,9 +94,14 @@ const handleDelete = async () => {
   };
 
   const handleSearchChange = (value: string) => {
-    setFilters((prev) => ({ ...prev, search: value }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  };
+  setFilters((prev) => ({ ...prev, search: value }));
+
+  clearTimeout((window as any).searchTimer);
+
+  (window as any).searchTimer = setTimeout(() => {
+    setDebouncedSearch(value.trim());
+  }, 500);
+};
 
   const handlePageChange = (page: number) => {
     setPagination((prev) => ({ ...prev, page }));
@@ -151,11 +157,11 @@ const handleDelete = async () => {
       />
 
       <ConfirmModal
-  open={!!deleteId}
-  onClose={() => setDeleteId(null)}
-  onConfirm={handleDelete}
-  loading={deleteUser.isPending}
-/>
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        loading={deleteUser.isPending}
+      />
 
       {/* ✅ ONLY EDIT FORM */}
       <UserForm
@@ -172,3 +178,22 @@ const handleDelete = async () => {
 };
 
 export default User;
+
+
+// if (search) {
+//       criteria.$or = [
+//         { firstName: { $regex: search, $options: 'si' } },
+//         { lastName: { $regex: search, $options: 'si' } },
+//         { email: { $regex: search, $options: 'si' } },
+//         // { 'contact.phoneNo': { $regex: search, $options: 'si' } },
+//         {
+//           $expr: {
+//             $regexMatch: {
+//               input: { $toString: "$contact.phoneNo" },
+//               regex: search,
+//               options: "i"
+//             }
+//           }
+//         }
+//       ]
+//     }

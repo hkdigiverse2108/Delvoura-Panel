@@ -11,6 +11,7 @@ import {
   DownOutlined,
   UserAddOutlined,
   StarOutlined,
+  CalendarOutlined 
 } from "@ant-design/icons";
 
 import { useAppDispatch, useAppSelector } from "../../Store/hooks";
@@ -217,7 +218,7 @@ const AppHeader = ({ collapsed, setCollapsed }: AppHeaderProps) => {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "order": return <StarOutlined style={{ fontSize: 18 }} />;
+      case "order": return <CalendarOutlined style={{ fontSize: 18 }} />;
       case "user": return <UserAddOutlined style={{ fontSize: 18 }} />;
       case "review": return <StarOutlined style={{ fontSize: 18 }} />;
       default: return <BellOutlined style={{ fontSize: 18 }} />;

@@ -294,17 +294,15 @@ const RatingTable = ({ data, loading, page, limit, onEdit, onDelete }: any) => {
       
       render: (item: any) => (
         <div className="flex gap-2">
-
-
-  <button
-          onClick={() => setSelectedRating(item)}
-          className="group p-2 rounded-lg transition-all duration-200 action-btn "
-          style={{ backgroundColor: 'transparent' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-10)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          title="View full review"
-        >
-          <Eye size={18} style={{ color: 'var(--gray-dark)' }} className="group-hover"  />
+          <button
+            onClick={() => setSelectedRating(item)}
+            className="group p-2 rounded-lg transition-all duration-200 action-btn view"
+            style={{ backgroundColor: 'transparent' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-10)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            title="View full review"
+          >
+            <Eye size={18} style={{ color: 'var(--gray-dark)' }} className="group-hover"  />
         </button>
           <button
             className="action-btn edit"

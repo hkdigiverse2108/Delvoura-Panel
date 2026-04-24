@@ -37,7 +37,7 @@ const ContactUs = () => {
   onSearchChange={(val) => setFilters({ search: val })}
   onSearchSubmit={refetch}
 
-  showStatusToggle={false}   // 🔥 THIS FIX
+  showStatusToggle={false}   
   showTotal={true}
 />
      

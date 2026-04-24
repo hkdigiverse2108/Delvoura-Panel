@@ -366,137 +366,137 @@ const topProducts = useMemo(() => {
         </div>
 
         {/* Two Column Layout - Responsive */}
-<div className="two-column-layout">
-  {/* Left Column - Order Status & Top Products */}
-  <div className="left-column">
-    {/* Order Status Distribution */}
-    <div className="info-card">
-      <div className="card-header">
-        <h3 className="card-title">Order Status Distribution</h3>
-        <button className="card-action-btn" aria-label="More options">
-          <MoreHorizontal size={18} />
-        </button>
-      </div>
-      <div className="card-content">
-        <div className="status-pie-container">
-          <ResponsiveContainer width="100%" height={window.innerWidth <= 480 ? 180 : 220}>
-            <PieChart>
-              <Pie
-                data={statusDistribution}
-                cx="50%"
-                cy="50%"
-                innerRadius={window.innerWidth <= 350 ? 40 : window.innerWidth <= 480 ? 50 : 60}
-                outerRadius={window.innerWidth <= 350 ? 60 : window.innerWidth <= 480 ? 70 : 85}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {statusDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="status-legend">
-          {statusDistribution.map((status, idx) => (
-            <div key={idx} className="status-legend-item">
-              <div className="status-dot" style={{ backgroundColor: status.color }} />
-              <span className="status-name">{status.name}</span>
-              <span className="status-count">{status.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-
-    {/* Top Selling Products */}
-    <div className="info-card">
-      <div className="card-header">
-        <h3 className="card-title">Top Selling Products</h3>
-        <Award size={20} className="card-icon" />
-      </div>
-      <div className="card-content no-padding">
-        {topProducts.length > 0 ? (
-          <div className="products-list">
-            {topProducts.slice(0, window.innerWidth <= 480 ? 4 : 5).map((product: any, idx) => (
-              <div key={idx} className="product-item">
-                <div className="product-rank">{idx + 1}</div>
-                <div className="product-info">
-                  <p className="product-name">
-                    {product.productName || "Unknown Product"}
-                  </p>
-                  <p className="product-meta">{product.quantity} units sold</p>
+        <div className="two-column-layout">
+          {/* Left Column - Order Status & Top Products */}
+          <div className="left-column">
+            {/* Order Status Distribution */}
+            <div className="info-card">
+              <div className="card-header">
+                <h3 className="card-title">Order Status Distribution</h3>
+                <button className="card-action-btn" aria-label="More options">
+                  <MoreHorizontal size={18} />
+                </button>
+              </div>
+              <div className="card-content">
+                <div className="status-pie-container">
+                  <ResponsiveContainer width="100%" height={window.innerWidth <= 480 ? 180 : 220}>
+                    <PieChart>
+                      <Pie
+                        data={statusDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={window.innerWidth <= 350 ? 40 : window.innerWidth <= 480 ? 50 : 60}
+                        outerRadius={window.innerWidth <= 350 ? 60 : window.innerWidth <= 480 ? 70 : 85}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {statusDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="product-revenue">
-                  ₹{product.revenue.toLocaleString()}
-                  <span className="product-growth positive">+{product.growth?.toFixed(1)}%</span>
+                <div className="status-legend">
+                  {statusDistribution.map((status, idx) => (
+                    <div key={idx} className="status-legend-item">
+                      <div className="status-dot" style={{ backgroundColor: status.color }} />
+                      <span className="status-name">{status.name}</span>
+                      <span className="status-count">{status.value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">No sales data available</div>
-        )}
-      </div>
-    </div>
-  </div>
+            </div>
 
-  {/* Right Column - Recent Orders Table */}
-  <div className="right-column">
-    <div className="info-card full-height">
-      <div className="card-header">
-        <h3 className="card-title">Recent Orders</h3>
-        <Link to="/orders" className="view-all-link">
-          View All <ChevronRight size={16} />
-        </Link>
-      </div>
-      <div className="card-content no-padding">
-        <div className="orders-table-container">
-          <table className="elegant-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.slice(0, window.innerWidth <= 640 ? 4 : 6).map((order: any) => (
-                <tr key={order._id}>
-                  <td className="order-id">#{order.orderId?.slice(-8) || "N/A"}</td>
-                  <td>{order.firstName ? `${order.firstName} ${order.lastName || ""}` : "Guest"}</td>
-                  <td className="amount">₹{order.total?.toLocaleString() || 0}</td>
-                  <td>
-                    <span className={`order-status ${order.orderStatus?.toLowerCase()}`}>
-                      {getStatusIcon(order.orderStatus)}
-                      {order.orderStatus || "Pending"}
-                    </span>
-                  </td>
-                  <td className="date">{new Date(order.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-              {orders.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="empty-row">No orders found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            {/* Top Selling Products */}
+            <div className="info-card">
+              <div className="card-header">
+                <h3 className="card-title">Top Selling Products</h3>
+                <Award size={20} className="card-icon" />
+              </div>
+              <div className="card-content no-padding">
+                {topProducts.length > 0 ? (
+                  <div className="products-list">
+                    {topProducts.slice(0, window.innerWidth <= 480 ? 4 : 5).map((product: any, idx) => (
+                      <div key={idx} className="product-item">
+                        <div className="product-rank">{idx + 1}</div>
+                        <div className="product-info">
+                          <p className="product-name" style={{paddingRight: "15px"}}>
+                            {product.productName || "Unknown Product"}
+                          </p>
+                          <p className="product-meta">{product.quantity} units sold</p>
+                        </div>
+                        <div className="product-revenue">
+                          ₹{product.revenue.toLocaleString()}
+                          <span className="product-growth positive">+{product.growth?.toFixed(1)}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">No sales data available</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Recent Orders Table */}
+          <div className="right-column">
+            <div className="info-card full-height">
+              <div className="card-header">
+                <h3 className="card-title">Recent Orders</h3>
+                <Link to="/orders" className="view-all-link">
+                  View All <ChevronRight size={16} />
+                </Link>
+              </div>
+              <div className="card-content no-padding">
+                <div className="orders-table-container">
+                  <table className="elegant-table">
+                    <thead>
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.slice(0, window.innerWidth <= 640 ? 4 : 6).map((order: any) => (
+                        <tr key={order._id}>
+                          <td className="order-id">#{order.orderId?.slice(-8) || "N/A"}</td>
+                          <td>{order.firstName ? `${order.firstName} ${order.lastName || ""}` : "Guest"}</td>
+                          <td className="amount">₹{order.total?.toLocaleString() || 0}</td>
+                          <td>
+                            <span className={`order-status ${order.orderStatus?.toLowerCase()}`}>
+                              {getStatusIcon(order.orderStatus)}
+                              {order.orderStatus || "Pending"}
+                            </span>
+                          </td>
+                          <td className="date">{new Date(order.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                      {orders.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="empty-row">No orders found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
         {/* Bottom Section - Users & Messages */}
         <div className="bottom-section">
           {/* Recent Users */}
           <div className="info-card">
             <div className="card-header">
               <h3 className="card-title">New Customers</h3>
-              <Link to="/users" className="view-all-link">
+              <Link to="/user" className="view-all-link">
                 View All <ChevronRight size={16} />
               </Link>
             </div>

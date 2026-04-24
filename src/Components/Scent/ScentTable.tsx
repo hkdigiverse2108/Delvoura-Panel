@@ -85,13 +85,14 @@ const ScentTable = ({
       render: (item: any) => (
         <div className="flex justify-end gap-2">
           <button
-            className="action-btn"
+            // className="action-btn"
+             className={`action-btn ${item.isActive ? "view" : "inactive-view"}`}
             onClick={() => onToggleStatus(item)}
-            title={item.isActive ? "Set Inactive" : "Set Active"}
-            style={{
-              color: item.isActive ? "var(--primary)" : "var(--red)",
-              borderColor: item.isActive ? "var(--primary-light)" : "rgba(255,0,0,0.15)",
-            }}
+            // title={item.isActive ? "Set Inactive" : "Set Active"}
+            // style={{
+            //   color: item.isActive ? "var(--primary)" : "var(--red)",
+            //   borderColor: item.isActive ? "var(--primary-light)" : "rgba(255,0,0,0.15)",
+            // }}
           >
             {item.isActive ? <Eye size={16} /> : <EyeOff size={16} />}
           </button>

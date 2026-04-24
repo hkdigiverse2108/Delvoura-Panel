@@ -47,11 +47,11 @@ const CollectionTable = ({
             <img
               src={item.image}
               alt={item.name}
-              className="w-12 h-12 rounded-lg object-cover border"
+              className="w-12 h-12 rounded-lg object-cover border border-gray-200"
             />
           ) : (
             <div
-              className="w-12 h-12 rounded-lg flex items-center justify-center border"
+              className="w-12 h-12 rounded-lg flex items-center justify-center border border-gray-200"
               style={{ backgroundColor: "var(--gray-light)" }}
             >
               <FolderOpen size={18} style={{ color: "var(--primary)" }} />

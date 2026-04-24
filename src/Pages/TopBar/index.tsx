@@ -9,6 +9,8 @@ const Topbar = () => {
   const [items, setItems] = useState<string[]>([]);
   const [savedItems, setSavedItems] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
 
   const { data, refetch } = Queries.useGetTopbar();
   const addEditMutation = Mutations.useAddEditTopbar();
@@ -91,9 +93,44 @@ const Topbar = () => {
         <div className="space-y-3">
           {items.map((item, index) => (
             <div
-              key={index}
-              className="flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-2 bg-gray-50"
-            >
+  key={index}
+  draggable={isEditing}
+  onDragStart={() => setDragIndex(index)}
+  onDragOver={(e) => {
+    e.preventDefault();
+    setOverIndex(index);
+  }}
+  onDragLeave={() => setOverIndex(null)}
+  onDrop={() => {
+    if (dragIndex === null) return;
+
+    const updated = [...items];
+    const draggedItem = updated[dragIndex];
+
+    updated.splice(dragIndex, 1);
+    updated.splice(index, 0, draggedItem);
+
+    setItems(updated);
+    setDragIndex(null);
+    setOverIndex(null);
+  }}
+  onDragEnd={() => {
+    setDragIndex(null);
+    setOverIndex(null);
+  }}
+  className={`group flex items-center gap-3 rounded-xl px-4 py-3 
+  border transition-all duration-200
+  ${dragIndex === index ? "opacity-40 scale-[0.98]" : ""}
+  ${overIndex === index ? "border-blue-400 bg-blue-50" : "bg-gray-50 border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200"}
+`}
+>
+              <span
+  draggable={isEditing}
+  onDragStart={() => setDragIndex(index)}
+  className="text-gray-300 text-xs cursor-grab active:cursor-grabbing"
+>
+  ⋮⋮
+</span>
               <span className="text-xs text-gray-400 w-6">
                 {index + 1}
               </span>
@@ -105,13 +142,14 @@ const Topbar = () => {
                   handleChange(e.target.value, index)
                 }
                 placeholder="Enter topbar message..."
-                className="flex-1 bg-transparent outline-none text-sm"
+                className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder:text-gray-400 py-1"
               />
 
               {isEditing && (
                 <button
                   onClick={() => handleRemoveItem(index)}
-                  className="text-red-500 hover:text-red-600"
+                  className="opacity-0 group-hover:opacity-100 transition 
+           p-1 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-500"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -120,8 +158,8 @@ const Topbar = () => {
           ))}
 
           {items.length === 0 && (
-            <div className="text-center text-gray-400 text-sm py-6">
-              No topbar items added yet
+            <div className="text-center text-gray-400 text-sm py-8">
+              No items yet. Click <span className="font-medium text-gray-600">“Add Item”</span> to get started.
             </div>
           )}
         </div>

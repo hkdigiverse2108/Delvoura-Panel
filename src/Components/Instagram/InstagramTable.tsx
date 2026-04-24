@@ -35,7 +35,7 @@ const InstagramTable = ({
     return (
       <img
         src={imgUrl}
-        className="w-16 h-16 rounded object-cover"
+        className="w-16 h-16 rounded object-cover border border-gray-200"
         onError={(e: any) => {
           e.target.src = "https://via.placeholder.com/80";
         }}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Star, User, Package, MessageSquare, Sparkles, Search, ChevronDown, } from "lucide-react";
 
 import { Queries } from "../../Api/Queries";
@@ -11,6 +11,7 @@ import {
   CommonInput,
   CommonPageHeaderForm,
 } from "../common/commonForm";
+import { useClickOutside } from "../../Utils/Hooks/useClickOutside";
 
 const RatingFormPage = ({ onBack, onSubmit, initialValues }: any) => {
   const [form, setForm] = useState({
@@ -27,6 +28,12 @@ const RatingFormPage = ({ onBack, onSubmit, initialValues }: any) => {
   const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const isEdit = !!initialValues;
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(dropdownRef, isProductDropdownOpen, () => {
+    setIsProductDropdownOpen(false);
+  });
+  
 
   const { data } = Queries.useGetProductDropdown({}, true);
 interface ProductOption {
@@ -37,7 +44,7 @@ interface ProductOption {
     data?.data?.product_data?.map((p: any) => ({
       label: p.name,
       value: p._id,
-      image: p.image || null,
+      image: p.coverimage || p.images?.[0] || null,
       category: p.category || "Product"
     })) || [];
 
@@ -98,6 +105,7 @@ const filteredProducts = products.filter(
     setIsProductDropdownOpen(false);
     setSearchTerm("");
   };
+  
 
   return (
     <CommonFormCard>
@@ -109,9 +117,9 @@ const filteredProducts = products.filter(
 
       <div className="p-8 space-y-8 bg-gradient-to-br from-white to-gray-50">
         {/* Product Selection Section - A1 Style */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-primary-10 rounded-lg">
+        <div className="space-y-8 p-2">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary-10">
               <Package className="w-5 h-5 text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Product Information</h3>
@@ -133,9 +141,18 @@ const filteredProducts = products.filter(
               <div className="flex items-center justify-between">
                 {selectedProduct ? (
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary-gradient">
-                      {selectedProduct.image ? (
+                    <div className="w-10 h-10 rounded-lg border border-gray-200 bg-white overflow-hidden flex items-center justify-center">
+                      {/* {selectedProduct.image ? (
                         <img src={selectedProduct.image} alt="" className="w-6 h-6 object-contain" />
+                      ) : (
+                        <Package className="w-5 h-5 text-primary" />
+                      )} */}
+                      {selectedProduct.image ? (
+                        <img
+                          src={selectedProduct.image}
+                          alt=""
+                          className="w-full h-full object-cover rounded"
+                        />
                       ) : (
                         <Package className="w-5 h-5 text-primary" />
                       )}
@@ -154,7 +171,7 @@ const filteredProducts = products.filter(
             
             {/* Dropdown Menu */}
             {isProductDropdownOpen && (
-              <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div ref={dropdownRef} className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Search Bar */}
                 <div className="p-3 border-b border-gray-100">
                   <div className="relative">
@@ -178,9 +195,9 @@ const filteredProducts = products.filter(
                         key={product.value}
                         type="button"
                         onClick={() => handleSelectProduct(product)}
-                    className={`w-full text-left px-4 py-5 transition-colors duration-150 flex items-center gap-3 border-b border-gray-50 last:border-0 hover-primary ${
-    form.productId === product.value ? "selected-primary" : ""
-  }`}
+                        className={`w-full text-left px-4 py-5 transition-colors duration-150 flex items-center gap-3 border-b border-gray-50 last:border-0 hover-primary ${
+                          form.productId === product.value ? "selected-primary" : ""
+                        }`}
                       >
                         <div className="w-10 h-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           {product.image ? (
@@ -220,17 +237,17 @@ const filteredProducts = products.filter(
         </div>
 
         {/* Rating Section */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2  bg-primary-10 rounded-lg">
-              <Star className="w-5 h-5  bg-primary-10" />
+        <div className="space-y-8 p-2">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary-10">
+              <Star className="w-5 h-5 text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Your Rating</h3>
           </div>
           
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Rate your experience *
+              Rate your experience <span className="text-red-500">*</span>
             </label>
             
             <div className="flex flex-col gap-4">
@@ -239,10 +256,10 @@ const filteredProducts = products.filter(
                   <button
                     key={star}
                     type="button"
-                    onClick={() => setForm({ ...form, starRating: star })}
+                    onClick={() => setForm({ ...form, starRating: form.starRating === star ? 0 : star })}
                     onMouseEnter={() => setHoveredRating(star)}
                     onMouseLeave={() => setHoveredRating(0)}
-                    className="transition-transform hover:scale-110 focus:outline-none"
+                    className="transition-all duration-150 hover:scale-110 hover:drop-shadow-sm focus:outline-none"
                   >
                     <Star
                       size={36}
@@ -276,10 +293,10 @@ const filteredProducts = products.filter(
         </div>
 
         {/* Reviewer Information Section */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <User className="w-5 h-5 text-green-600" />
+        <div className="space-y-8 p-2">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-green-100">
+              <User className="w-5 h-5 text-green-700" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Reviewer Details</h3>
           </div>
@@ -316,10 +333,10 @@ const filteredProducts = products.filter(
         </div>
 
         {/* Review Section */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <MessageSquare className="w-5 h-5 text-purple-600" />
+        <div className="space-y-8 p-2">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-purple-100">
+              <MessageSquare className="w-5 h-5 text-purple-700" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Your Review</h3>
           </div>
