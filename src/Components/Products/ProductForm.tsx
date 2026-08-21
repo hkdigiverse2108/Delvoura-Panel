@@ -87,18 +87,30 @@ const ProductPreview = ({ form }: { form: any }) => {
           </>
         )}
 
-        {/* gender */}
-        <span className="absolute top-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
-          {form.gender?.toUpperCase() || "UNISEX"}
-        </span>
+        {/* badges */}
+        <div className="absolute top-3 left-3 z-10">
+          <span className="bg-white/95 backdrop-blur-sm text-[#111111] text-[11px] font-bold uppercase px-2.5 py-0.5 rounded shadow-sm border border-black/10 tracking-wider">
+            {form.gender?.toUpperCase() || "UNISEX"}
+          </span>
+        </div>
 
         {/* trending/featured badges */}
-        <div className="absolute top-3 right-3 flex gap-1">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
           {form.isTrending && (
-            <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">🔥</span>
+            <span
+              className="w-7 h-7 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 text-white flex items-center justify-center text-xs shadow-md"
+              title="Trending"
+            >
+              🔥
+            </span>
           )}
           {form.isFeatured && (
-            <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">⭐</span>
+            <span
+              className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-white flex items-center justify-center text-xs shadow-md"
+              title="Featured"
+            >
+              ⭐
+            </span>
           )}
         </div>
       </div>
